@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SeatWatch – BookMyShow Seat Availability Monitor</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen font-sans antialiased">
+
+  <!-- Header -->
+  <header class="border-b border-slate-800 bg-slate-950/80 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-rose-500 to-amber-500 flex items-center justify-center text-white font-bold shadow-lg shadow-rose-500/20">
+          <i class="fa-solid fa-ticket-simple text-lg"></i>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+            SeatWatch
+            <span class="text-xs px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20 font-medium">BMS Live Engine</span>
+          </h1>
+          <p class="text-xs text-slate-400">Autonomous Seat Availability & Booking Alert System</p>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="flex items-center space-x-1 bg-slate-900 p-1 rounded-xl border border-slate-800">
+        <button id="tab-monitors-btn" class="nav-tab active px-4 py-2 rounded-lg text-sm font-medium transition-all text-white bg-slate-800 shadow-sm" onclick="switchTab('monitors')">
+          <i class="fa-solid fa-chart-line mr-2 text-rose-400"></i>Active Monitors
+        </button>
+        <button id="tab-create-btn" class="nav-tab px-4 py-2 rounded-lg text-sm font-medium transition-all text-slate-400 hover:text-white" onclick="switchTab('create')">
+          <i class="fa-solid fa-plus mr-2 text-emerald-400"></i>New Monitor
+        </button>
+        <button id="tab-settings-btn" class="nav-tab px-4 py-2 rounded-lg text-sm font-medium transition-all text-slate-400 hover:text-white" onclick="switchTab('settings')">
+          <i class="fa-brands fa-telegram mr-2 text-sky-400"></i>Telegram Bot
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+
+    <!-- Global Alert Banner -->
+    <div id="global-alert" class="hidden mb-6 p-4 rounded-xl border text-sm flex items-center justify-between transition-all">
+      <div class="flex items-center gap-3">
+        <i id="global-alert-icon" class="fa-solid fa-circle-info"></i>
+        <span id="global-alert-msg">Notification message</span>
+      </div>
+      <button onclick="hideAlert()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TAB 1: ACTIVE MONITORS DASHBOARD          -->
+    <!-- ========================================== -->
+    <section id="tab-monitors" class="space-y-6">
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h2 class="text-2xl font-bold tracking-tight text-white">Active Seat Monitors</h2>
+          <p class="text-sm text-slate-400">Background engine checks BookMyShow every 2–3 minutes for your preferred conditions.</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <button onclick="loadMonitors()" class="px-3.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-medium border border-slate-700 transition flex items-center gap-2">
+            <i class="fa-solid fa-rotate-right"></i> Refresh
+          </button>
+          <button onclick="switchTab('create')" class="px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-sm font-semibold shadow-lg shadow-rose-600/30 transition flex items-center gap-2">
+            <i class="fa-solid fa-plus"></i> Create New Watch
+          </button>
+        </div>
+      </div>
+
+      <!-- Monitors Container -->
+      <div id="monitors-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Rendered dynamically via JS -->
+      </div>
+
+      <!-- Empty State -->
+      <div id="monitors-empty" class="hidden text-center py-16 px-4 bg-slate-950/40 rounded-2xl border border-slate-800/80">
+        <div class="w-16 h-16 rounded-full bg-slate-800/80 mx-auto flex items-center justify-center text-slate-400 mb-4">
+          <i class="fa-solid fa-bell-slash text-2xl"></i>
+        </div>
+        <h3 class="text-lg font-semibold text-white mb-1">No Active Monitors</h3>
+        <p class="text-sm text-slate-400 max-w-md mx-auto mb-6">You don't have any movies or seats being monitored. Create one to get alerted when bookings open!</p>
+        <button onclick="switchTab('create')" class="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-sm font-semibold shadow-lg shadow-rose-600/30 transition">
+          <i class="fa-solid fa-plus mr-2"></i> Create Your First Monitor
+        </button>
+      </div>
+    </section>
+
+
+    <!-- ========================================== -->
+    <!-- TAB 2: CREATE MONITOR WIZARD              -->
+    <!-- ========================================== -->
+    <section id="tab-create" class="hidden max-w-4xl mx-auto space-y-6">
+      <div>
+        <h2 class="text-2xl font-bold tracking-tight text-white">Create BookMyShow Monitor</h2>
+        <p class="text-sm text-slate-400">Select Theatre/Screen, Date, Movie, and pick any format (Dolby 3D, IMAX, 2D) with exact seat rules.</p>
+      </div>
+
+      <div class="bg-slate-950/60 border border-slate-800 rounded-2xl p-6 sm:p-8 space-y-8 shadow-xl">
+
+        <!-- STEP 1: City Selection -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <label class="text-sm font-semibold text-slate-200 flex items-center gap-2">
+              <span class="w-6 h-6 rounded-full bg-rose-500/20 text-rose-400 text-xs flex items-center justify-center font-bold">1</span>
+              Select City / Region
+            </label>
+            <span id="city-loader" class="hidden text-xs text-rose-400"><i class="fa-solid fa-circle-notch fa-spin mr-1"></i> Fetching live BMS cities...</span>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-5 gap-2" id="popular-cities-pills">
+            <!-- Popular city buttons loaded here -->
+          </div>
+          <div class="pt-1">
+            <select id="all-cities-select" class="w-full bg-slate-900 border border-slate-700/80 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-rose-500 transition" onchange="onCitySelected(this.value, this.options[this.selectedIndex].text)">
+              <option value="">-- Or choose from all 2,000+ regions --</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- STEP 2 & 3: Cinema & Target Date Selection -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+
+          <!-- Theatre / Cinema Selection (Screen First) -->
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <label class="text-sm font-semibold text-slate-200 flex items-center gap-2">
+                <span class="w-6 h-6 rounded-full bg-rose-500/20 text-rose-400 text-xs flex items-center justify-center font-bold">2</span>
+                Select Theatre / Cinema
+              </label>
+              <span id="cinemas-loader" class="hidden text-xs text-rose-400"><i class="fa-solid fa-circle-notch fa-spin mr-1"></i> Loading cinemas...</span>
+            </div>
+            <select id="theatre-select" class="w-full bg-slate-900 border border-slate-700/80 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-rose-500 transition" onchange="onCinemaOrDateChanged()">
+              <option value="">-- Loading cinemas... --</option>
+            </select>
+            <div class="pt-1">
+              <input type="text" id="custom-theatre-code" placeholder="Or enter 4-letter Cinema Code (e.g. ALUC, ACAS, AMBH)" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs text-slate-300 focus:outline-none focus:border-rose-500 transition" onchange="onCinemaOrDateChanged()">
+            </div>
+          </div>
+
+          <!-- Target Date -->
+          <div class="space-y-3">
+            <label class="text-sm font-semibold text-slate-200 flex items-center gap-2">
+              <span class="w-6 h-6 rounded-full bg-rose-500/20 text-rose-400 text-xs flex items-center justify-center font-bold">3</span>
+              Target Booking Date
+            </label>
+            <input type="date" id="target-date-input" class="w-full bg-slate-900 border border-slate-700/80 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-rose-500 transition" onchange="onCinemaOrDateChanged()">
+            <div class="flex flex-wrap gap-2 pt-1 text-xs">
+              <button type="button" onclick="setPresetDate(0)" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300">Today</button>
+              <button type="button" onclick="setPresetDate(1)" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300">Tomorrow</button>
+              <button type="button" onclick="setPresetDate('next_sat')" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300">Next Sat</button>
+              <button type="button" onclick="setPresetDate('next_sun')" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300">Next Sun</button>
+            </div>
+            <p class="text-xs text-slate-400">You can pick future dates for which bookings have <strong>not opened yet</strong>.</p>
+          </div>
+
+        </div>
+
+        <!-- STEP 4: Live Movie Selection at that Cinema -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <label class="text-sm font-semibold text-slate-200 flex items-center gap-2">
+              <span class="w-6 h-6 rounded-full bg-rose-500/20 text-rose-400 text-xs flex items-center justify-center font-bold">4</span>
+              Select Movie Playing at this Cinema
+            </label>
+            <span id="movies-loader" class="hidden text-xs text-rose-400"><i class="fa-solid fa-circle-notch fa-spin mr-1"></i> Checking cinema schedule...</span>
+          </div>
+          <select id="movie-select" class="w-full bg-slate-900 border border-slate-700/80 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-rose-500 transition" onchange="onMovieSelected()">
+            <option value="">-- Select Cinema and Date first --</option>
+          </select>
+          <div id="unopened-notice" class="hidden p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-300">
+            <i class="fa-solid fa-clock mr-1"></i> Bookings have not opened yet for this cinema on this date. SeatWatch will automatically monitor BookMyShow every 2–3 mins until shows go live!
+          </div>
+        </div>
+
+        <!-- STEP 5: Formats, Screens & Showtimes Selection -->
+        <div class="space-y-3" id="format-selection-container">
+          <div class="flex items-center justify-between">
+            <label class="text-sm font-semibold text-slate-200 flex items-center gap-2">
+              <span class="w-6 h-6 rounded-full bg-rose-500/20 text-rose-400 text-xs flex items-center justify-center font-bold">5</span>
+              Select Format & Screen (Dolby Cinema 3D, 2D, 3D)
+            </label>
+            <span class="text-xs text-slate-400">Choose exact language & screen experience</span>
+          </div>
+
+          <!-- All Formats Container -->
+          <div id="formats-cards-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="text-xs text-slate-500 col-span-2 p-4 bg-slate-900/50 rounded-xl border border-slate-800 text-center">
+              Please select a Movie to view its available screens and formats.
+            </div>
+          </div>
+
+          <!-- Selected Format Hidden/Display Inputs -->
+          <input type="hidden" id="selected-event-code" value="">
+          <input type="hidden" id="selected-session-id" value="">
+          <input type="hidden" id="selected-format-name" value="">
+          <input type="hidden" id="selected-showtime-str" value="">
+          <input type="hidden" id="selected-screen-filter" value="ALL">
+        </div>
+
+        <!-- Look at Layout on BookMyShow Section -->
+        <div id="bms-layout-action-section" class="pt-4 border-t border-slate-800">
+          <div class="p-5 bg-gradient-to-r from-slate-900 via-slate-900/90 to-slate-950 border border-slate-800/80 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
+            <div class="space-y-1.5 text-center sm:text-left">
+              <div class="flex items-center justify-center sm:justify-start gap-2.5">
+                <span class="w-8 h-8 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-400 text-sm flex items-center justify-center font-bold">
+                  <i class="fa-solid fa-map-location-dot"></i>
+                </span>
+                <div>
+                  <h4 class="text-sm font-bold text-white flex items-center gap-2" id="bms-layout-card-title">
+                    Official BMS Screen Layout
+                  </h4>
+                  <span id="bms-layout-screen-badge" class="text-[11px] font-mono text-rose-400 font-semibold"></span>
+                </div>
+              </div>
+              <p class="text-xs text-slate-400 max-w-xl" id="bms-layout-card-desc">
+                Open official BookMyShow in a new tab to see the exact screen layout, rows, and seat numbers, then configure your target row ranges and seat conditions below.
+              </p>
+            </div>
+
+            <a id="look-at-layout-bms-btn" href="#" target="_blank"
+              class="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-rose-600 via-rose-500 to-rose-600 hover:from-rose-500 hover:to-rose-500 text-white font-bold text-sm shadow-lg shadow-rose-600/30 flex items-center justify-center gap-2.5 transition transform hover:-translate-y-0.5 cursor-pointer flex-shrink-0">
+              <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
+              <span>Look at Layout on BMS</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- STEP 6: Preferred Seats & Conditions -->
+        <div class="space-y-4 pt-2 border-t border-slate-800">
+          <div class="flex items-center justify-between">
+            <label class="text-sm font-semibold text-slate-200 flex items-center gap-2">
+              <span class="w-6 h-6 rounded-full bg-rose-500/20 text-rose-400 text-xs flex items-center justify-center font-bold">6</span>
+              Seat Monitoring Rule
+            </label>
+            <span class="text-xs text-slate-400">Configure multi-row ranges & consecutive seats</span>
+          </div>
+
+          <!-- Rule Type Tabs -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <button type="button" id="tab-btn-ZONES" class="rule-type-btn active p-3 rounded-xl border border-rose-500/40 bg-rose-500/10 text-xs font-medium text-white transition text-left" onclick="setRuleType('ZONES')">
+              <i class="fa-solid fa-table-cells-large text-rose-400 mb-1 block text-sm"></i>
+              <strong>Smart Zones & Ranges</strong>
+              <div class="text-[11px] text-slate-400 mt-0.5">e.g. Rows B-I, 12-25, 4 consecutive seats</div>
+            </button>
+            <button type="button" id="tab-btn-EXACT" class="rule-type-btn p-3 rounded-xl border border-slate-800 bg-slate-900 text-xs font-medium text-slate-300 hover:border-slate-700 transition text-left" onclick="setRuleType('EXACT')">
+              <i class="fa-solid fa-chair text-emerald-400 mb-1 block text-sm"></i>
+              <strong>Exact Specific Seats</strong>
+              <div class="text-[11px] text-slate-400 mt-0.5">e.g. G10, G11, G12</div>
+            </button>
+            <button type="button" id="tab-btn-BOOKING_OPEN" class="rule-type-btn p-3 rounded-xl border border-slate-800 bg-slate-900 text-xs font-medium text-slate-300 hover:border-slate-700 transition text-left" onclick="setRuleType('BOOKING_OPEN')">
+              <i class="fa-solid fa-door-open text-sky-400 mb-1 block text-sm"></i>
+              <strong>Booking Open Alert</strong>
+              <div class="text-[11px] text-slate-400 mt-0.5">Notify as soon as show opens</div>
+            </button>
+          </div>
+
+          <!-- Dynamic Rule Configuration Panels -->
+          <div id="rule-config-container" class="bg-slate-900/80 p-4 rounded-xl border border-slate-800 space-y-4">
+
+            <!-- Panel: ZONES (Smart Multi-Zone & Range Engine) -->
+            <div id="rule-panel-ZONES" class="space-y-4">
+              <div class="flex items-center justify-between flex-wrap gap-2 pb-2 border-b border-slate-800/80">
+                <span class="text-xs text-slate-300 font-medium flex items-center gap-1.5">
+                  <i class="fa-solid fa-sliders text-rose-400"></i> Selection Matching Strategy:
+                </span>
+                <div class="flex items-center gap-4 text-xs text-slate-300">
+                  <label class="flex items-center gap-1.5 cursor-pointer">
+                    <input type="radio" name="zones-match-logic" value="ANY" checked onchange="updateZonesMatchLogic(this.value)">
+                    <span class="font-medium text-slate-200">Alert if ANY Selection Matches (OR)</span>
+                  </label>
+                  <label class="flex items-center gap-1.5 cursor-pointer">
+                    <input type="radio" name="zones-match-logic" value="ALL" onchange="updateZonesMatchLogic(this.value)">
+                    <span class="text-slate-400">Match ALL Selections (AND)</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Zone Cards Container -->
+              <div id="zones-list-container" class="space-y-3">
+                <!-- Dynamically generated zone cards -->
+              </div>
+
+              <!-- Add Zone Button -->
+              <button type="button" onclick="addNewZone()" class="w-full py-2.5 px-4 rounded-xl border border-dashed border-slate-700 hover:border-rose-500/60 bg-slate-950/60 hover:bg-rose-500/5 text-xs text-rose-300 font-semibold flex items-center justify-center gap-2 transition">
+                <i class="fa-solid fa-plus text-xs"></i> Add Another Selection Zone (e.g. Alternative Row J for 2 seats)
+              </button>
+            </div>
+
+            <!-- Panel: EXACT -->
+            <div id="rule-panel-EXACT" class="hidden space-y-3">
+              <label class="text-xs text-slate-400 block">Comma-separated seat codes</label>
+              <input type="text" id="exact-seats" placeholder="e.g. G10, G11, G12" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 font-mono">
+              <div class="flex items-center gap-4 text-xs text-slate-300">
+                <label class="flex items-center gap-1.5 cursor-pointer">
+                  <input type="radio" name="exact-mode" value="ALL" checked> All must be available
+                </label>
+                <label class="flex items-center gap-1.5 cursor-pointer">
+                  <input type="radio" name="exact-mode" value="ANY"> At least one available
+                </label>
+              </div>
+            </div>
+
+            <!-- Panel: BOOKING_OPEN -->
+            <div id="rule-panel-BOOKING_OPEN" class="hidden text-xs text-slate-400 py-1">
+              <i class="fa-solid fa-circle-check text-sky-400 mr-1.5"></i>
+              SeatWatch will alert you via Telegram as soon as ticket bookings open for this show, regardless of seat position.
+            </div>
+
+          </div>
+        </div>
+
+        <!-- STEP 7: Check Interval, Telegram & Start Button -->
+        <div class="pt-4 border-t border-slate-800 space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
+            <div class="space-y-1">
+              <label class="text-xs text-slate-300 font-medium flex items-center gap-1.5">
+                <i class="fa-solid fa-clock text-rose-400"></i>
+                Background Polling Interval:
+              </label>
+              <select id="interval-select" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200">
+                <option value="2.0">Every 2 Minutes (Recommended)</option>
+                <option value="3.0">Every 3 Minutes</option>
+                <option value="5.0">Every 5 Minutes</option>
+                <option value="1.0">Every 1 Minute (High Demand)</option>
+              </select>
+            </div>
+
+            <div class="space-y-1">
+              <label class="text-xs text-slate-300 font-medium flex items-center justify-between">
+                <span class="flex items-center gap-1.5">
+                  <i class="fa-brands fa-telegram text-sky-400"></i>
+                  Notify Telegram Chat ID:
+                </span>
+                <a href="https://t.me/userinfobot" target="_blank" class="text-[10px] text-sky-400 hover:underline">Find My ID (@userinfobot)</a>
+              </label>
+              <input type="text" id="monitor-telegram-chat-id" placeholder="Optional: your personal Chat ID (e.g. 123456789)" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-sky-500 transition">
+            </div>
+          </div>
+
+          <div class="flex items-center justify-end pt-2">
+            <button type="button" onclick="createMonitorHandler()" class="w-full sm:w-auto px-7 py-3 rounded-xl bg-gradient-to-r from-rose-600 via-rose-500 to-rose-600 hover:from-rose-500 hover:to-rose-400 text-white font-bold text-sm shadow-lg shadow-rose-600/30 transition flex items-center justify-center gap-2">
+              <i class="fa-solid fa-bolt"></i> Start Watching Seats
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ========================================== -->
+    <!-- TAB 3: TELEGRAM SETTINGS                  -->
+    <!-- ========================================== -->
+    <section id="tab-settings" class="hidden max-w-2xl mx-auto space-y-6">
+      <div>
+        <h2 class="text-2xl font-bold tracking-tight text-white">Telegram Notification Settings</h2>
+        <p class="text-sm text-slate-400">SeatWatch pushes instant notifications to your Telegram when preferred seats become free.</p>
+      </div>
+
+      <div class="bg-slate-950/60 border border-slate-800 rounded-2xl p-6 sm:p-8 space-y-6 shadow-xl">
+        <div class="space-y-4">
+          <div>
+            <label class="text-sm font-semibold text-slate-200 block mb-1">Telegram Bot Token</label>
+            <input type="text" id="tg-token-input" placeholder="e.g. 7123456789:AAH..." class="w-full bg-slate-900 border border-slate-700/80 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-sky-500 transition">
+            <span class="text-xs text-slate-400 mt-1 block">Created in 30 seconds via <a href="https://t.me/BotFather" target="_blank" class="text-sky-400 underline">@BotFather</a> on Telegram.</span>
+          </div>
+
+          <div>
+            <label class="text-sm font-semibold text-slate-200 block mb-1">Your Telegram Chat ID</label>
+            <input type="text" id="tg-chat-input" placeholder="e.g. 123456789" class="w-full bg-slate-900 border border-slate-700/80 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-sky-500 transition">
+            <span class="text-xs text-slate-400 mt-1 block">Find your chat ID instantly by messaging <a href="https://t.me/userinfobot" target="_blank" class="text-sky-400 underline">@userinfobot</a>.</span>
+          </div>
+        </div>
+
+        <div class="pt-4 border-t border-slate-800 flex items-center justify-between gap-4">
+          <button type="button" onclick="testTelegramAlert()" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-medium transition flex items-center gap-2">
+            <i class="fa-solid fa-paper-plane text-sky-400"></i> Send Test Alert
+          </button>
+
+          <button type="button" onclick="saveSettings()" class="px-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-semibold text-sm shadow-lg shadow-sky-600/30 transition flex items-center gap-2">
+            <i class="fa-solid fa-floppy-disk"></i> Save Settings
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Logs Modal -->
+  <div id="logs-modal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full p-6 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="text-lg font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-clock-rotate-left text-rose-400"></i> Check History Logs
+        </h3>
+        <button onclick="closeLogsModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      <div id="logs-content" class="max-h-96 overflow-y-auto space-y-2 text-xs font-mono">
+        <!-- Log entries -->
+      </div>
+      <div class="pt-2 text-right">
+        <button onclick="closeLogsModal()" class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
