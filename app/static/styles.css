@@ -1,8 +1,66 @@
-/* SeatWatch Custom Styles */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+/* ============================================================
+   SeatWatch – Premium Cinematic Movie-Themed Design System
+   ============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+:root {
+  --cinema-bg: #07080c;
+  --cinema-card: #0d1017;
+  --cinema-crimson: #e11d48;
+  --cinema-rose: #f43f5e;
+  --cinema-gold: #fbbf24;
+  --cinema-amber: #f59e0b;
+  --cinema-cyan: #06b6d4;
+  --cinema-emerald: #10b981;
+}
 
 body {
-  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: var(--cinema-bg);
+  background-image: 
+    radial-gradient(circle at 50% 0%, rgba(225, 29, 72, 0.12) 0%, transparent 60%),
+    radial-gradient(circle at 10% 30%, rgba(6, 182, 212, 0.06) 0%, transparent 40%),
+    radial-gradient(circle at 90% 70%, rgba(251, 191, 36, 0.05) 0%, transparent 45%);
+  background-attachment: fixed;
+  color: #f1f5f9;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Ambient Projector Beam at top of screen */
+.projector-beam {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90vw;
+  max-width: 1100px;
+  height: 480px;
+  background: radial-gradient(ellipse at top, rgba(244, 63, 94, 0.14) 0%, rgba(6, 182, 212, 0.04) 45%, transparent 75%);
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Subtle Film Grain Overlay */
+.film-grain {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  z-index: 1;
+}
+
+/* Brand Display Font */
+.font-cinema {
+  font-family: 'Cinzel', serif;
+  letter-spacing: 0.06em;
+}
+
+.font-mono {
+  font-family: 'JetBrains Mono', monospace;
 }
 
 /* Custom Scrollbars */
@@ -11,34 +69,175 @@ body {
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #0f172a;
+  background: #08090d;
 }
 ::-webkit-scrollbar-thumb {
-  background: #334155;
+  background: #272f3d;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #475569;
+  background: #e11d48;
 }
 
-/* Card hover animation */
-.monitor-card {
-  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+/* Cinema Card & Ticket Motif */
+.cinema-card {
+  background: linear-gradient(145deg, rgba(16, 20, 29, 0.85) 0%, rgba(10, 12, 18, 0.95) 100%);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.monitor-card:hover {
+
+.cinema-card:hover {
+  border-color: rgba(244, 63, 94, 0.3);
+  box-shadow: 0 16px 40px -10px rgba(225, 29, 72, 0.15), 0 0 0 1px rgba(244, 63, 94, 0.1) inset;
   transform: translateY(-2px);
-  border-color: #475569;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
 }
 
-.rule-type-btn.active {
-  border-color: rgba(244, 63, 94, 0.6);
-  background-color: rgba(244, 63, 94, 0.12);
-  color: #ffffff;
+/* Perforated Ticket Divider */
+.perforated-line {
+  background-image: linear-gradient(to right, rgba(255, 255, 255, 0.12) 50%, transparent 50%);
+  background-size: 10px 1px;
+  background-repeat: repeat-x;
+  height: 1px;
 }
 
-.popular-city-btn.active {
-  border-color: #f43f5e;
-  background-color: #f43f5e;
+/* Neon Glow Utilities */
+.neon-glow-rose {
+  box-shadow: 0 0 25px -4px rgba(225, 29, 72, 0.5);
+}
+.neon-glow-cyan {
+  box-shadow: 0 0 25px -4px rgba(6, 182, 212, 0.5);
+}
+.neon-glow-gold {
+  box-shadow: 0 0 25px -4px rgba(251, 191, 36, 0.5);
+}
+
+/* Nav Tabs */
+.nav-tab {
+  position: relative;
+  transition: all 0.25s ease;
+}
+.nav-tab.active {
+  background: linear-gradient(135deg, rgba(225, 29, 72, 0.25) 0%, rgba(15, 23, 42, 0.8) 100%);
+  border: 1px solid rgba(244, 63, 94, 0.4);
   color: #ffffff;
+  box-shadow: 0 4px 15px -3px rgba(225, 29, 72, 0.3);
+}
+
+/* Radar Animation for Monitor Creation & Scanning */
+@keyframes radar-sweep {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes radar-blip {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+  100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+}
+
+.radar-sweep-beam {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 50%;
+  height: 50%;
+  transform-origin: top left;
+  background: conic-gradient(from 0deg, rgba(6, 182, 212, 0.5) 0deg, rgba(6, 182, 212, 0) 60deg);
+  animation: radar-sweep 2.2s linear infinite;
+  pointer-events: none;
+}
+
+/* Ticket Stamping Animation */
+@keyframes ticket-stamp {
+  0% {
+    opacity: 0;
+    transform: scale(1.8) rotate(-12deg);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(0.95) rotate(-5deg);
+  }
+  80% {
+    transform: scale(1.02) rotate(-5deg);
+  }
+  100% {
+    transform: scale(1) rotate(-5deg);
+  }
+}
+
+.ticket-stamp-badge {
+  animation: ticket-stamp 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+/* Modal backdrop blur */
+.cinema-modal-backdrop {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  background: rgba(5, 7, 12, 0.85);
+}
+
+/* Floating Toast Notification Container */
+#cinema-toast-container {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 420px;
+  width: calc(100vw - 48px);
+  pointer-events: none;
+}
+
+.cinema-toast {
+  pointer-events: auto;
+  transform: translateX(120%);
+  opacity: 0;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cinema-toast.show {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.cinema-toast.hide {
+  transform: translateX(120%);
+  opacity: 0;
+}
+
+/* Confetti particles */
+.confetti-particle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  pointer-events: none;
+  animation: fall 1.5s ease-out forwards;
+}
+
+@keyframes fall {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) rotate(0deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--tx), var(--ty)) rotate(720deg);
+  }
 }

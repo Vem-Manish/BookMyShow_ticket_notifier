@@ -61,33 +61,229 @@ function switchTab(tabName) {
   }
 }
 
-function showAlert(message, type = "info") {
-  const banner = document.getElementById("global-alert");
-  const msgEl = document.getElementById("global-alert-msg");
-  const iconEl = document.getElementById("global-alert-icon");
+// ----------------------------------------------------
+// Cinematic Audio Synthesizer (Web Audio API)
+// ----------------------------------------------------
+function playCinemaSound(type = 'success') {
+  try {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return;
+    const ctx = new AudioContext();
+    const now = ctx.currentTime;
 
-  banner.className = "mb-6 p-4 rounded-xl border text-sm flex items-center justify-between transition-all ";
-  if (type === "success") {
-    banner.classList.add("bg-emerald-950/40", "border-emerald-800/80", "text-emerald-300");
-    iconEl.className = "fa-solid fa-circle-check text-emerald-400";
-  } else if (type === "error") {
-    banner.classList.add("bg-rose-950/40", "border-rose-800/80", "text-rose-300");
-    iconEl.className = "fa-solid fa-triangle-exclamation text-rose-400";
-  } else {
-    banner.classList.add("bg-sky-950/40", "border-sky-800/80", "text-sky-300");
-    iconEl.className = "fa-solid fa-circle-info text-sky-400";
+    if (type === 'activate') {
+      // 3-tone rising fanfare
+      const freqs = [440, 554.37, 659.25, 880];
+      freqs.forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, now + idx * 0.09);
+        gain.gain.setValueAtTime(0.12, now + idx * 0.09);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.09 + 0.35);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now + idx * 0.09);
+        osc.stop(now + idx * 0.09 + 0.35);
+      });
+    } else if (type === 'success') {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(523.25, now);
+      osc.frequency.exponentialRampToValueAtTime(783.99, now + 0.15);
+      gain.gain.setValueAtTime(0.1, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.4);
+    } else if (type === 'error') {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(220, now);
+      osc.frequency.linearRampToValueAtTime(110, now + 0.25);
+      gain.gain.setValueAtTime(0.08, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.25);
+    }
+  } catch (e) {
+    // AudioContext blocked
+  }
+}
+
+// ----------------------------------------------------
+// Cinematic Floating Toast System (Replaces browser alerts)
+// ----------------------------------------------------
+function showAlert(message, type = "info") {
+  let container = document.getElementById("cinema-toast-container");
+  if (!container) {
+    container = document.createElement("div");
+    container.id = "cinema-toast-container";
+    document.body.appendChild(container);
   }
 
-  msgEl.textContent = message;
-  banner.classList.remove("hidden");
+  playCinemaSound(type);
+
+  const toast = document.createElement("div");
+  toast.className = "cinema-toast flex items-start justify-between gap-3 p-4 rounded-2xl border shadow-2xl backdrop-blur-xl relative overflow-hidden ";
+
+  let icon = "fa-solid fa-clapperboard text-sky-400";
+  let borderClass = "border-sky-500/30 bg-slate-950/90 text-slate-200";
+  let barColor = "bg-sky-400";
+
+  if (type === "success") {
+    icon = "fa-solid fa-circle-check text-emerald-400";
+    borderClass = "border-emerald-500/30 bg-slate-950/90 text-slate-200";
+    barColor = "bg-emerald-400";
+  } else if (type === "error") {
+    icon = "fa-solid fa-triangle-exclamation text-rose-400";
+    borderClass = "border-rose-500/30 bg-slate-950/90 text-slate-200";
+    barColor = "bg-rose-400";
+  } else if (type === "warning") {
+    icon = "fa-solid fa-bell text-amber-400";
+    borderClass = "border-amber-500/30 bg-slate-950/90 text-slate-200";
+    barColor = "bg-amber-400";
+  }
+
+  toast.className += borderClass;
+
+  toast.innerHTML = `
+    <div class="flex items-start gap-3">
+      <i class="${icon} text-lg mt-0.5 shrink-0"></i>
+      <div class="text-xs font-medium leading-relaxed">${message}</div>
+    </div>
+    <button onclick="this.closest('.cinema-toast').remove()" class="text-slate-400 hover:text-white transition shrink-0">
+      <i class="fa-solid fa-xmark text-sm"></i>
+    </button>
+  `;
+
+  container.appendChild(toast);
+
+  requestAnimationFrame(() => {
+    toast.classList.add("show");
+  });
 
   setTimeout(() => {
-    hideAlert();
-  }, 6000);
+    toast.classList.remove("show");
+    toast.classList.add("hide");
+    setTimeout(() => toast.remove(), 400);
+  }, 5000);
 }
 
 function hideAlert() {
-  document.getElementById("global-alert").classList.add("hidden");
+  const container = document.getElementById("cinema-toast-container");
+  if (container) container.innerHTML = "";
+}
+
+// ----------------------------------------------------
+// Cinematic Confirmation Modal (Replaces browser confirm())
+// ----------------------------------------------------
+let pendingConfirmCallback = null;
+
+function showCinematicConfirm({ title, message, confirmText = "Confirm", confirmIcon = "fa-solid fa-check", onConfirm, icon = "fa-solid fa-clapperboard" }) {
+  const modal = document.getElementById("cinema-confirm-modal");
+  if (!modal) {
+    if (confirm(message)) onConfirm && onConfirm();
+    return;
+  }
+
+  document.getElementById("confirm-modal-title").textContent = title;
+  document.getElementById("confirm-modal-desc").textContent = message;
+  document.getElementById("confirm-modal-icon").className = icon;
+
+  const actionBtn = document.getElementById("confirm-modal-action-btn");
+  actionBtn.innerHTML = `<i class="${confirmIcon}"></i> <span>${confirmText}</span>`;
+
+  pendingConfirmCallback = onConfirm;
+
+  modal.classList.remove("hidden");
+  document.getElementById("confirm-modal-cancel-btn").onclick = () => {
+    modal.classList.add("hidden");
+    pendingConfirmCallback = null;
+  };
+  actionBtn.onclick = () => {
+    modal.classList.add("hidden");
+    if (pendingConfirmCallback) {
+      pendingConfirmCallback();
+      pendingConfirmCallback = null;
+    }
+  };
+}
+
+// ----------------------------------------------------
+// Cinematic Monitor Activation Animation & Modal
+// ----------------------------------------------------
+let lastCreatedMonitorId = null;
+
+function showActivationModal(data) {
+  const modal = document.getElementById("cinema-activation-modal");
+  if (!modal) return;
+
+  document.getElementById("act-modal-movie").textContent = data.movie_title || "Movie";
+  document.getElementById("act-modal-venue").innerHTML = `<i class="fa-solid fa-location-dot text-rose-400 mr-1"></i> ${data.venue_name || "Cinema"}`;
+  
+  const d = data.target_date || "";
+  const displayDate = d.length === 8 ? `${d.substring(6,8)}/${d.substring(4,6)}/${d.substring(0,4)}` : d;
+  document.getElementById("act-modal-date").textContent = displayDate;
+  document.getElementById("act-modal-format").textContent = data.format_name || "Any Format";
+  document.getElementById("act-modal-rule").textContent = data.rule_summary || "Preferred seats";
+  document.getElementById("act-modal-id").textContent = data.id || "NEW";
+
+  lastCreatedMonitorId = data.id;
+
+  modal.classList.remove("hidden");
+  spawnConfetti();
+}
+
+function closeActivationModalAndGo() {
+  const modal = document.getElementById("cinema-activation-modal");
+  if (modal) modal.classList.add("hidden");
+  switchTab("monitors");
+  loadMonitors();
+
+  setTimeout(() => {
+    if (lastCreatedMonitorId) {
+      const card = document.getElementById(`monitor-card-${lastCreatedMonitorId}`);
+      if (card) {
+        card.scrollIntoView({ behavior: "smooth", block: "center" });
+        card.classList.add("ring-2", "ring-rose-500", "neon-glow-rose");
+        setTimeout(() => {
+          card.classList.remove("ring-2", "ring-rose-500", "neon-glow-rose");
+        }, 4000);
+      }
+    }
+  }, 300);
+}
+
+function spawnConfetti() {
+  const container = document.getElementById("activation-modal-box");
+  if (!container) return;
+
+  const colors = ["#f43f5e", "#06b6d4", "#fbbf24", "#10b981", "#a855f7"];
+  for (let i = 0; i < 30; i++) {
+    const p = document.createElement("div");
+    p.className = "confetti-particle";
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    p.style.backgroundColor = color;
+    p.style.left = "50%";
+    p.style.top = "20%";
+
+    const angle = Math.random() * Math.PI * 2;
+    const dist = 60 + Math.random() * 150;
+    const tx = Math.cos(angle) * dist + "px";
+    const ty = Math.sin(angle) * dist + "px";
+
+    p.style.setProperty("--tx", tx);
+    p.style.setProperty("--ty", ty);
+
+    container.appendChild(p);
+    setTimeout(() => p.remove(), 1600);
+  }
 }
 
 // ----------------------------------------------------
@@ -1068,8 +1264,26 @@ async function createMonitorHandler() {
     });
     const result = await res.json();
     if (result.success) {
-      showAlert(`Monitor created for ${selectedMovieObj.title} (${formatName || 'All formats'})! Polling every ${intervalMinutes} mins.`, "success");
-      switchTab("monitors");
+      playCinemaSound('activate');
+      let ruleDesc = "Preferred seats";
+      if (currentRuleType === "MULTI_SELECTION") {
+        ruleDesc = rulePayload.selections?.length ? `${rulePayload.selections.length} Selection Block(s)` : "Multi-Row Range";
+      } else if (currentRuleType === "ROW_SEAT_COUNT") {
+        ruleDesc = `Row ${rulePayload.row}: ${rulePayload.min_seats} seats`;
+      } else if (currentRuleType === "SPECIFIC_SEATS") {
+        ruleDesc = `Seats: ${(rulePayload.seats || []).join(", ")}`;
+      } else if (currentRuleType === "BOOKING_OPEN") {
+        ruleDesc = "Booking Opening Alert";
+      }
+
+      showActivationModal({
+        id: result.monitor_id,
+        movie_title: selectedMovieObj.title,
+        venue_name: selectedVenueName,
+        target_date: targetDate,
+        format_name: formatName || "Any Format",
+        rule_summary: ruleDesc
+      });
     } else {
       showAlert("Error creating monitor: " + result.message, "error");
     }
@@ -1109,7 +1323,8 @@ async function loadMonitors() {
 
 function createMonitorCard(m) {
   const card = document.createElement("div");
-  card.className = "monitor-card bg-slate-950/60 border border-slate-800 rounded-2xl p-5 space-y-4 shadow-lg flex flex-col justify-between";
+  card.id = `monitor-card-${m.id}`;
+  card.className = "monitor-card cinema-card rounded-2xl p-5 space-y-4 shadow-xl flex flex-col justify-between relative overflow-hidden transition-all";
 
   let badgeColor = "bg-slate-800 text-slate-300 border-slate-700";
   let statusIcon = "fa-solid fa-clock";
@@ -1238,11 +1453,18 @@ async function resumeMonitor(id) {
   loadMonitors();
 }
 
-async function deleteMonitor(id) {
-  if (confirm("Are you sure you want to delete this monitor?")) {
-    await fetch(`/api/monitors/${id}`, { method: "DELETE" });
-    loadMonitors();
-  }
+function deleteMonitor(id) {
+  showCinematicConfirm({
+    title: "Decommission Seat Watcher?",
+    message: `Are you sure you want to delete Monitor #${id}? Continuous BookMyShow radar surveillance for this show will be stopped immediately.`,
+    confirmText: "Delete Watcher",
+    confirmIcon: "fa-solid fa-trash-can",
+    onConfirm: async () => {
+      await fetch(`/api/monitors/${id}`, { method: "DELETE" });
+      showAlert(`Monitor #${id} removed from surveillance radar.`, "info");
+      loadMonitors();
+    }
+  });
 }
 
 // ----------------------------------------------------
@@ -1372,17 +1594,22 @@ async function start1ClickPairing() {
   }
 }
 
-async function disconnectTelegram() {
-  if (!confirm("Are you sure you want to disconnect your Telegram account from SeatWatch?")) {
-    return;
-  }
-  try {
-    await fetch("/api/telegram/disconnect", { method: "POST" });
-    showAlert("Telegram account unlinked. You can pair again with 1 click.", "info");
-    loadSettings();
-  } catch (err) {
-    showAlert("Failed to disconnect: " + err.message, "error");
-  }
+function disconnectTelegram() {
+  showCinematicConfirm({
+    title: "Disconnect Telegram Account?",
+    message: "Are you sure you want to disconnect your Telegram account from SeatWatch? You will no longer receive instant alerts until paired again.",
+    confirmText: "Disconnect Account",
+    confirmIcon: "fa-solid fa-link-slash",
+    onConfirm: async () => {
+      try {
+        await fetch("/api/telegram/disconnect", { method: "POST" });
+        showAlert("Telegram account unlinked. 1-Click pairing is ready.", "info");
+        loadSettings();
+      } catch (err) {
+        showAlert("Failed to disconnect: " + err.message, "error");
+      }
+    }
+  });
 }
 
 async function saveSettings() {
