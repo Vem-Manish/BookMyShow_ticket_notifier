@@ -29,6 +29,7 @@ class MonitoringScheduler:
         self.notifier = TelegramNotifier()
         self.bms = BMSClient()
         self.running_jobs: Dict[int, str] = {}
+        self.last_alert_cache: Dict[int, Dict[str, Any]] = {}
 
     def start(self):
         if not self.scheduler.running:
@@ -73,6 +74,7 @@ class MonitoringScheduler:
         if self.scheduler.get_job(job_id):
             self.scheduler.remove_job(job_id)
         self.running_jobs.pop(monitor_id, None)
+        self.last_alert_cache.pop(monitor_id, None)
         logger.info(f"Unscheduled Monitor #{monitor_id}.")
 
     async def execute_check(self, monitor_id: int) -> Dict[str, Any]:
@@ -246,13 +248,28 @@ class MonitoringScheduler:
             last_explanation = explanation
 
             if is_satisfied:
-                # Trigger alert!
+                # Target seats found!
                 settings = get_settings()
                 token = settings.get("telegram_bot_token")
                 chat_id = rule_payload.get("telegram_chat_id") or settings.get("telegram_chat_id")
 
+                # Check alert throttle cache so user isn't spammed every check for identical seats
+                now = datetime.now()
+                last_alert = self.last_alert_cache.get(monitor_id)
+                should_send_telegram = True
+
+                if last_alert:
+                    prev_seats = set(last_alert.get("seats", []))
+                    curr_seats = set(matched_seats)
+                    last_time = last_alert.get("time", now)
+                    elapsed_mins = (now - last_time).total_seconds() / 60.0
+
+                    # Throttle duplicate alerts for the exact same seats to every 15 minutes
+                    if curr_seats == prev_seats and elapsed_mins < 15.0:
+                        should_send_telegram = False
+
                 alert_sent = False
-                if token and chat_id:
+                if should_send_telegram and token and chat_id:
                     alert_sent = await self.notifier.send_alert(
                         movie_title=monitor["movie_title"],
                         theatre_name=monitor["venue_name"],
@@ -265,17 +282,25 @@ class MonitoringScheduler:
                         custom_token=token,
                         custom_chat_id=chat_id
                     )
+                    if alert_sent:
+                        self.last_alert_cache[monitor_id] = {
+                            "seats": matched_seats,
+                            "time": now,
+                            "show_time": sh_time
+                        }
 
                 final_msg = f"🎯 SEATS AVAILABLE in {sh_time} show! {explanation}"
                 if alert_sent:
                     final_msg += " (Telegram alert dispatched)"
+                elif not should_send_telegram:
+                    final_msg += " (Continuous watch active • Alert reminder throttled)"
 
-                update_monitor_status(monitor_id, "TRIGGERED", final_msg, session_id=sh_id, booking_url=sh_url)
-                add_log(monitor_id, "TRIGGERED", final_msg, seats_found=", ".join(matched_seats))
-                self.unschedule_monitor(monitor_id)
+                # Keep monitor ACTIVE so it continues monitoring continuously until manually paused or deleted
+                update_monitor_status(monitor_id, "ACTIVE", final_msg, session_id=sh_id, booking_url=sh_url)
+                add_log(monitor_id, "SEATS_FOUND", final_msg, seats_found=", ".join(matched_seats))
 
                 return {
-                    "status": "TRIGGERED",
+                    "status": "ACTIVE",
                     "matched_seats": matched_seats,
                     "explanation": explanation,
                     "show_time": sh_time,

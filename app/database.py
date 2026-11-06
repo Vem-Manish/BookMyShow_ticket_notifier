@@ -80,6 +80,9 @@ def init_db():
     cursor.execute("INSERT OR IGNORE INTO settings (key, value) VALUES ('telegram_chat_id', '');")
     cursor.execute("INSERT OR IGNORE INTO settings (key, value) VALUES ('default_interval_minutes', '2');")
 
+    # Ensure any previously triggered monitors continue monitoring
+    cursor.execute("UPDATE monitors SET status = 'ACTIVE' WHERE status = 'TRIGGERED';")
+
     conn.commit()
     conn.close()
 
