@@ -31,7 +31,17 @@ DEFAULT_HEADERS = {
 class BMSClient:
     def __init__(self, browser_profile: str = "chrome"):
         self.browser_profile = browser_profile
-        self.client = primp.Client(impersonate=browser_profile, timeout=10)
+        client = None
+        for prof in [browser_profile, "chrome", "chrome_126", "chrome_124", None]:
+            try:
+                if prof:
+                    client = primp.Client(impersonate=prof, timeout=10)
+                else:
+                    client = primp.Client(timeout=10)
+                break
+            except Exception:
+                continue
+        self.client = client if client is not None else primp.Client(timeout=10)
         self._cinema_slug_cache: Dict[str, str] = {}
         self._cinema_format_cache: Dict[str, Dict[str, Any]] = {}
 

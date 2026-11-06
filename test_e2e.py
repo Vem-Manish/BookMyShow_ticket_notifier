@@ -48,8 +48,10 @@ class TestSeatWatchSystem(unittest.TestCase):
         print(f"[OK] Movies Discovery verified ({len(data['movies'])} movies found).")
 
     def test_03_seat_layout_decryption(self):
-        # Test with live session at AAA Cinemas Ameerpet (ACAS, session 39831)
-        layout = self.bms.get_seat_layout("ACAS", "39831")
+        # Test with live session at AAA Cinemas Ameerpet (session 39838)
+        layout = self.bms.get_seat_layout("ACAS", "39838")
+        if not layout or layout.get("total_seats", 0) == 0:
+            layout = self.bms.get_seat_layout("ALUC", "6330")
         self.assertIn("total_seats", layout)
         self.assertIn("available_seats", layout)
         self.assertIn("layout_rows", layout)

@@ -64,6 +64,8 @@ class MonitoringScheduler:
             id=job_id,
             name=f"Monitor Check #{monitor_id}",
             replace_existing=True,
+            misfire_grace_time=90,
+            coalesce=True,
             next_run_time=datetime.now() # trigger immediate first run
         )
         self.running_jobs[monitor_id] = job_id
