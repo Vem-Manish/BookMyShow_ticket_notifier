@@ -554,18 +554,18 @@ function renderFormats(formats) {
 
   if (formats.length === 0) {
     container.innerHTML = `
-      <div class="col-span-2 p-5 bg-slate-900/70 rounded-xl border border-slate-800 space-y-3">
-        <p class="text-xs text-amber-300 font-semibold flex items-center gap-1.5">
-          <i class="fa-solid fa-clock"></i> Auto-Watch Future Unopened Date
+      <div class="unopened-format-box">
+        <p class="unopened-format-title">
+          <i class="fa-solid fa-clock"></i> AUTO-WATCH FUTURE UNOPENED DATE
         </p>
-        <p class="text-xs text-slate-400">Select which format you want SeatWatch to monitor as soon as BMS opens bookings:</p>
-        <div class="flex flex-wrap gap-2 pt-1" id="unopened-format-chips">
-          <button type="button" class="format-chip active px-3 py-1.5 rounded-lg border border-rose-500 bg-rose-500/10 text-xs text-rose-300 font-medium transition" onclick="selectUnopenedFormat('Telugu • DOLBY CINEMA 3D', this)">Telugu • DOLBY CINEMA 3D</button>
-          <button type="button" class="format-chip px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-xs text-slate-300 font-medium hover:border-slate-600 transition" onclick="selectUnopenedFormat('Hindi • DOLBY CINEMA 3D', this)">Hindi • DOLBY CINEMA 3D</button>
-          <button type="button" class="format-chip px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-xs text-slate-300 font-medium hover:border-slate-600 transition" onclick="selectUnopenedFormat('Telugu • 3D', this)">Telugu • 3D</button>
-          <button type="button" class="format-chip px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-xs text-slate-300 font-medium hover:border-slate-600 transition" onclick="selectUnopenedFormat('Hindi • 3D', this)">Hindi • 3D</button>
-          <button type="button" class="format-chip px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-xs text-slate-300 font-medium hover:border-slate-600 transition" onclick="selectUnopenedFormat('Hindi • 2D', this)">Hindi • 2D</button>
-          <button type="button" class="format-chip px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-xs text-slate-300 font-medium hover:border-slate-600 transition" onclick="selectUnopenedFormat('Any Format', this)">Any Format</button>
+        <p class="unopened-format-subtitle">Select which format you want SeatWatch to monitor as soon as BMS opens bookings:</p>
+        <div class="unopened-format-chips" id="unopened-format-chips">
+          <button type="button" class="format-chip active" onclick="selectUnopenedFormat('Telugu • DOLBY CINEMA 3D', this)">Telugu • DOLBY CINEMA 3D</button>
+          <button type="button" class="format-chip" onclick="selectUnopenedFormat('Hindi • DOLBY CINEMA 3D', this)">Hindi • DOLBY CINEMA 3D</button>
+          <button type="button" class="format-chip" onclick="selectUnopenedFormat('Telugu • 3D', this)">Telugu • 3D</button>
+          <button type="button" class="format-chip" onclick="selectUnopenedFormat('Hindi • 3D', this)">Hindi • 3D</button>
+          <button type="button" class="format-chip" onclick="selectUnopenedFormat('Hindi • 2D', this)">Hindi • 2D</button>
+          <button type="button" class="format-chip" onclick="selectUnopenedFormat('Any Format', this)">Any Format</button>
         </div>
       </div>
     `;
@@ -875,9 +875,9 @@ function selectUnopenedFormat(fmtName, btnElement) {
   document.getElementById("selected-screen-filter").value = "ALL";
   if (btnElement) {
     document.querySelectorAll(".format-chip").forEach(c => {
-      c.className = "format-chip px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-xs text-slate-300 font-medium hover:border-slate-600 transition";
+      c.classList.remove("active");
     });
-    btnElement.className = "format-chip active px-3 py-1.5 rounded-lg border border-rose-500 bg-rose-500/10 text-xs text-rose-300 font-medium transition";
+    btnElement.classList.add("active");
   }
   const seatMapSection = document.getElementById("seat-map-section");
   if (seatMapSection) seatMapSection.classList.remove("hidden");
@@ -1387,12 +1387,14 @@ function createMonitorCard(m) {
             <i class="fa-brands fa-telegram"></i> ID: ${m.rule_payload.telegram_chat_id}
           </span>
         </div>` : ''}
-        <div class="spec-cell full-width">
-          <span class="spec-label">LAST RADAR PING</span>
-          <span class="spec-val mono" style="font-size:10px;color:var(--text-silver)">
-            <i class="fa-solid fa-satellite-dish" style="color:var(--gold-metallic);margin-right:4px"></i>${m.last_status_message || "Continuous surveillance active"}
-          </span>
+      </div>
+
+      <!-- Radar Status Report Banner -->
+      <div class="ticket-radar-banner">
+        <div class="radar-banner-header">
+          <i class="fa-solid fa-satellite-dish"></i> RADAR SURVEILLANCE REPORT
         </div>
+        <div class="radar-banner-text">${m.last_status_message || "Continuous surveillance active — waiting for first radar ping."}</div>
       </div>
     </div>
 
