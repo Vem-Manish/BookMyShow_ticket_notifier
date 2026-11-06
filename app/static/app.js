@@ -164,7 +164,7 @@ function showAlert(message, type = "info") {
   }, 5000);
 }
 
-function hideAlert()unction hideAlert() {
+function hideAlert() {
   const container = document.getElementById("cinema-toast-container");
   if (container) container.innerHTML = "";
 }
@@ -1522,7 +1522,7 @@ async function viewLogs(id) {
   }
 }
 
-function closeLogsModalunction closeLogsModal() {
+function closeLogsModal() {
   document.getElementById("logs-modal").classList.add("hidden");
 }
 
