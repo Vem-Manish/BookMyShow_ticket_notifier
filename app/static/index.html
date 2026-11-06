@@ -357,34 +357,117 @@
     <!-- ========================================== -->
     <section id="tab-settings" class="hidden max-w-2xl mx-auto space-y-6">
       <div>
-        <h2 class="text-2xl font-bold tracking-tight text-white">Telegram Notification Settings</h2>
-        <p class="text-sm text-slate-400">SeatWatch pushes instant notifications to your Telegram when preferred seats become free.</p>
+        <h2 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2.5">
+          <i class="fa-brands fa-telegram text-sky-400"></i>
+          Telegram Notification Setup
+        </h2>
+        <p class="text-sm text-slate-400 mt-1">
+          SeatWatch pushes instant alerts to your private Telegram the second your dream seats become available.
+        </p>
+      </div>
+
+      <!-- Official Bot Banner -->
+      <div class="bg-gradient-to-r from-sky-950/40 via-slate-900/60 to-slate-950/40 border border-sky-500/30 rounded-2xl p-5 shadow-xl flex items-center justify-between gap-4">
+        <div class="flex items-center gap-3.5">
+          <div class="w-12 h-12 rounded-xl bg-sky-500/20 border border-sky-400/30 flex items-center justify-center text-sky-400 text-2xl shadow-inner">
+            <i class="fa-solid fa-robot"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-base font-bold text-white">SeatWatch Bot</span>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
+                <i class="fa-solid fa-circle-check text-[9px]"></i> Ready
+              </span>
+            </div>
+            <p class="text-xs text-slate-300 mt-0.5">
+              Official Bot: <a href="https://t.me/seatwatch_alert_bot" target="_blank" class="text-sky-400 hover:text-sky-300 font-medium underline inline-flex items-center gap-1">@seatwatch_alert_bot <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i></a>
+            </p>
+          </div>
+        </div>
+        <a href="https://t.me/seatwatch_alert_bot" target="_blank" class="px-3.5 py-2 rounded-xl bg-sky-600/20 hover:bg-sky-600/30 text-sky-300 border border-sky-500/30 text-xs font-semibold transition flex items-center gap-1.5 whitespace-nowrap">
+          <i class="fa-solid fa-paper-plane text-xs"></i> Open Bot
+        </a>
       </div>
 
       <div class="bg-slate-950/60 border border-slate-800 rounded-2xl p-6 sm:p-8 space-y-6 shadow-xl">
-        <div class="space-y-4">
-          <div>
-            <label class="text-sm font-semibold text-slate-200 block mb-1">Telegram Bot Token</label>
-            <input type="text" id="tg-token-input" placeholder="e.g. 7123456789:AAH..." class="w-full bg-slate-900 border border-slate-700/80 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-sky-500 transition">
-            <span class="text-xs text-slate-400 mt-1 block">Created in 30 seconds via <a href="https://t.me/BotFather" target="_blank" class="text-sky-400 underline">@BotFather</a> on Telegram.</span>
-          </div>
-
-          <div>
-            <label class="text-sm font-semibold text-slate-200 block mb-1">Your Telegram Chat ID</label>
-            <input type="text" id="tg-chat-input" placeholder="e.g. 123456789" class="w-full bg-slate-900 border border-slate-700/80 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-sky-500 transition">
-            <span class="text-xs text-slate-400 mt-1 block">Find your chat ID instantly by messaging <a href="https://t.me/userinfobot" target="_blank" class="text-sky-400 underline">@userinfobot</a>.</span>
+        
+        <!-- Primary Input: Chat ID -->
+        <div class="space-y-3">
+          <label class="text-sm font-semibold text-slate-200 flex items-center justify-between">
+            <span class="flex items-center gap-2">
+              <i class="fa-solid fa-id-badge text-sky-400"></i> Your Telegram Chat ID
+            </span>
+            <span class="text-[11px] text-amber-400 font-medium bg-amber-400/10 border border-amber-400/20 px-2 py-0.5 rounded-md">Required for Alerts</span>
+          </label>
+          
+          <input type="text" id="tg-chat-input" placeholder="e.g. 7052985296" class="w-full bg-slate-900 border border-slate-700/80 rounded-xl px-4 py-3 text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-sky-500 transition font-mono">
+          
+          <!-- Step-by-Step Instructions under Chat ID -->
+          <div class="bg-slate-900/70 border border-slate-800/80 rounded-xl p-3.5 space-y-2 text-xs text-slate-300">
+            <div class="font-semibold text-slate-200 flex items-center gap-1.5 text-xs">
+              <i class="fa-solid fa-circle-question text-sky-400"></i> How to get your Chat ID in 20 seconds:
+            </div>
+            <ol class="list-decimal list-inside space-y-1.5 text-slate-300 pl-1 leading-relaxed">
+              <li>
+                Open <a href="https://t.me/seatwatch_alert_bot" target="_blank" class="text-sky-400 font-semibold underline hover:text-sky-300">@seatwatch_alert_bot</a> on Telegram and click <strong>Start</strong> (or send <code class="bg-slate-800 px-1 py-0.5 rounded text-sky-300">/start</code>).
+              </li>
+              <li>
+                Message <a href="https://t.me/userinfobot" target="_blank" class="text-sky-400 font-semibold underline hover:text-sky-300">@userinfobot</a> (or <a href="https://t.me/raw_data_bot" target="_blank" class="text-sky-400 underline hover:text-sky-300">@raw_data_bot</a>) on Telegram.
+              </li>
+              <li>
+                Copy the numeric <code class="bg-slate-800 px-1 py-0.5 rounded text-sky-300">Id: 123456789</code> it replies with, paste it above, and hit <strong>Save Settings</strong>.
+              </li>
+            </ol>
           </div>
         </div>
 
-        <div class="pt-4 border-t border-slate-800 flex items-center justify-between gap-4">
-          <button type="button" onclick="testTelegramAlert()" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-medium transition flex items-center gap-2">
+        <!-- Pro-Tip Card: Custom Sound / Urgent Ringtone -->
+        <div class="bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border border-amber-500/30 rounded-xl p-4 space-y-2">
+          <div class="flex items-center gap-2 text-amber-300 font-bold text-xs sm:text-sm">
+            <i class="fa-solid fa-volume-high text-amber-400 text-base"></i>
+            Pro-Tip: Never Miss Fast-Selling Ticket Drops!
+          </div>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            Hot movies (IMAX, blockbuster opening weekends) sell out prime seats in seconds. To guarantee you hear the alert:
+          </p>
+          <ul class="text-xs text-slate-400 space-y-1 list-disc list-inside pl-1">
+            <li>Click <strong>Send Test Alert</strong> below to receive a message from the bot.</li>
+            <li>In Telegram, open the chat with <strong class="text-slate-200">@seatwatch_alert_bot</strong>.</li>
+            <li>Tap the bot header at the top ➔ <strong class="text-slate-200">Notifications</strong> ➔ <strong class="text-slate-200">Customize</strong>.</li>
+            <li>Select a <strong class="text-amber-300">loud, distinctive ringtone</strong> and turn on <strong class="text-amber-300">High / Urgent Priority</strong> so it rings through even when your phone is in your pocket or on silent!</li>
+          </ul>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <button type="button" onclick="testTelegramAlert()" class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-medium transition flex items-center justify-center gap-2">
             <i class="fa-solid fa-paper-plane text-sky-400"></i> Send Test Alert
           </button>
 
-          <button type="button" onclick="saveSettings()" class="px-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-semibold text-sm shadow-lg shadow-sky-600/30 transition flex items-center gap-2">
+          <button type="button" onclick="saveSettings()" class="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-semibold text-sm shadow-lg shadow-sky-600/30 transition flex items-center justify-center gap-2">
             <i class="fa-solid fa-floppy-disk"></i> Save Settings
           </button>
         </div>
+
+        <!-- Advanced Toggle (Collapsible for custom bot token) -->
+        <div class="pt-3 border-t border-slate-800/80">
+          <details class="group text-xs text-slate-400">
+            <summary class="cursor-pointer hover:text-slate-200 transition font-medium flex items-center justify-between list-none">
+              <span class="flex items-center gap-1.5">
+                <i class="fa-solid fa-gear text-slate-500 group-open:text-sky-400 transition"></i>
+                Advanced: Use Custom Bot Token (Optional for Self-Hosters)
+              </span>
+              <i class="fa-solid fa-chevron-down text-[10px] text-slate-500 group-open:rotate-180 transition"></i>
+            </summary>
+            <div class="mt-3 pt-3 border-t border-slate-900 space-y-2">
+              <p class="text-[11px] text-slate-400">
+                SeatWatch uses our built-in bot by default. If you prefer to host your own dedicated bot via <a href="https://t.me/BotFather" target="_blank" class="text-sky-400 underline">@BotFather</a>, enter its token below:
+              </p>
+              <input type="text" id="tg-token-input" placeholder="Optional: your BotFather token (e.g. 7123456789:AAH...)" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-sky-500 transition font-mono">
+            </div>
+          </details>
+        </div>
+
       </div>
     </section>
 

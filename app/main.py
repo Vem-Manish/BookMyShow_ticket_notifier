@@ -23,7 +23,7 @@ from app.database import (
     update_monitor_status,
     update_setting,
 )
-from app.notifier import TelegramNotifier
+from app.notifier import TelegramNotifier, DEFAULT_BOT_TOKEN
 from app.scheduler import scheduler_instance
 
 
@@ -298,11 +298,13 @@ def write_settings(req: SettingsUpdateRequest):
 
 
 class TelegramTestRequest(BaseModel):
-    token: str
+    token: Optional[str] = None
     chat_id: str
 
 
 @app.post("/api/test_telegram")
 async def test_telegram(req: TelegramTestRequest):
-    res = await notifier.send_test_message(req.token, req.chat_id)
+    settings = get_settings()
+    token = (req.token and req.token.strip()) or settings.get("telegram_bot_token") or DEFAULT_BOT_TOKEN
+    res = await notifier.send_test_message(token, req.chat_id.strip())
     return res

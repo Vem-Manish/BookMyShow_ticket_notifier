@@ -1,0 +1,22 @@
+version: "3.8"
+
+services:
+  seatwatch:
+    build: .
+    container_name: seatwatch
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      # - TELEGRAM_BOT_TOKEN=your_custom_bot_token (optional override)
+      # Optional: set default chat id directly via env
+      # - TELEGRAM_CHAT_ID=your_chat_id_here
+    volumes:
+      # Persist SQLite database across container restarts
+      - ./data:/app/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3

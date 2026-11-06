@@ -1035,7 +1035,7 @@ async function createMonitorHandler() {
   const screenFilter = document.getElementById("selected-screen-filter")?.value || "ALL";
   rulePayload.screen_filter = screenFilter;
 
-  const userChatId = document.getElementById("monitor-telegram-chat-id")?.value.trim();
+  const userChatId = document.getElementById("monitor-telegram-chat-id")?.value.trim() || document.getElementById("tg-chat-input")?.value.trim();
   if (userChatId) {
     rulePayload.telegram_chat_id = userChatId;
   }
@@ -1286,16 +1286,34 @@ async function loadSettings() {
   try {
     const res = await fetch("/api/settings");
     const data = await res.json();
-    document.getElementById("tg-token-input").value = data.telegram_bot_token || "";
-    document.getElementById("tg-chat-input").value = data.telegram_chat_id || "";
+    const tokenInput = document.getElementById("tg-token-input");
+    if (tokenInput) {
+      tokenInput.value = data.telegram_bot_token || "";
+    }
+    const chatInput = document.getElementById("tg-chat-input");
+    if (chatInput) {
+      chatInput.value = data.telegram_chat_id || "";
+    }
+    // Auto-fill monitor creation chat ID if currently empty
+    if (data.telegram_chat_id) {
+      const monInput = document.getElementById("monitor-telegram-chat-id");
+      if (monInput && !monInput.value) {
+        monInput.value = data.telegram_chat_id;
+      }
+    }
   } catch (err) {
     console.error("Failed to load settings:", err);
   }
 }
 
 async function saveSettings() {
-  const token = document.getElementById("tg-token-input").value.trim();
-  const chatId = document.getElementById("tg-chat-input").value.trim();
+  const token = document.getElementById("tg-token-input")?.value.trim() || "";
+  const chatId = document.getElementById("tg-chat-input")?.value.trim() || "";
+
+  if (!chatId) {
+    showAlert("Please enter your numeric Telegram Chat ID (from @userinfobot).", "error");
+    return;
+  }
 
   try {
     const res = await fetch("/api/settings", {
@@ -1308,7 +1326,11 @@ async function saveSettings() {
     });
     const result = await res.json();
     if (result.success) {
-      showAlert("Telegram configuration saved!", "success");
+      showAlert("Telegram Chat ID saved successfully! You are ready to receive alerts.", "success");
+      const monInput = document.getElementById("monitor-telegram-chat-id");
+      if (monInput && !monInput.value) {
+        monInput.value = chatId;
+      }
     }
   } catch (err) {
     showAlert("Failed to save settings: " + err.message, "error");
@@ -1316,24 +1338,24 @@ async function saveSettings() {
 }
 
 async function testTelegramAlert() {
-  const token = document.getElementById("tg-token-input").value.trim();
-  const chatId = document.getElementById("tg-chat-input").value.trim();
+  const token = document.getElementById("tg-token-input")?.value.trim() || "";
+  const chatId = document.getElementById("tg-chat-input")?.value.trim() || "";
 
-  if (!token || !chatId) {
-    showAlert("Please enter both Bot Token and Chat ID to send a test alert.", "error");
+  if (!chatId) {
+    showAlert("Please enter your Telegram Chat ID first to send a test alert.", "error");
     return;
   }
 
-  showAlert("Sending test alert to Telegram...", "info");
+  showAlert("Sending test alert to Telegram via @seatwatch_alert_bot...", "info");
   try {
     const res = await fetch("/api/test_telegram", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token, chat_id: chatId })
+      body: JSON.stringify({ token: token || null, chat_id: chatId })
     });
     const result = await res.json();
     if (result.success) {
-      showAlert("Success! Check your Telegram app for the alert message.", "success");
+      showAlert("🎉 Success! Check @seatwatch_alert_bot on your Telegram app. Don't forget to set a custom alert sound!", "success");
     } else {
       showAlert("Telegram Test Failed: " + result.message, "error");
     }
