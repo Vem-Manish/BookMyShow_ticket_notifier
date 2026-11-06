@@ -42,19 +42,13 @@ document.addEventListener("DOMContentLoaded", () => {
 // ----------------------------------------------------
 function switchTab(tabName) {
   document.querySelectorAll("section[id^='tab-']").forEach(sec => sec.classList.add("hidden"));
-  document.querySelectorAll(".nav-tab").forEach(btn => {
-    btn.classList.remove("text-white", "bg-slate-800", "shadow-sm");
-    btn.classList.add("text-slate-400");
-  });
+  document.querySelectorAll(".nav-tab").forEach(btn => btn.classList.remove("active"));
 
   const targetSection = document.getElementById(`tab-${tabName}`);
   const targetBtn = document.getElementById(`tab-${tabName}-btn`);
 
   if (targetSection) targetSection.classList.remove("hidden");
-  if (targetBtn) {
-    targetBtn.classList.add("text-white", "bg-slate-800", "shadow-sm");
-    targetBtn.classList.remove("text-slate-400");
-  }
+  if (targetBtn) targetBtn.classList.add("active");
 
   if (tabName === "monitors") {
     loadMonitors();
@@ -130,35 +124,30 @@ function showAlert(message, type = "info") {
   playCinemaSound(type);
 
   const toast = document.createElement("div");
-  toast.className = "cinema-toast flex items-start justify-between gap-3 p-4 rounded-2xl border shadow-2xl backdrop-blur-xl relative overflow-hidden ";
+  toast.className = "cinema-toast";
 
-  let icon = "fa-solid fa-clapperboard text-sky-400";
-  let borderClass = "border-sky-500/30 bg-slate-950/90 text-slate-200";
-  let barColor = "bg-sky-400";
+  let icon = "fa-solid fa-clapperboard";
+  let iconColor = "color:var(--neon-cyan)";
 
   if (type === "success") {
-    icon = "fa-solid fa-circle-check text-emerald-400";
-    borderClass = "border-emerald-500/30 bg-slate-950/90 text-slate-200";
-    barColor = "bg-emerald-400";
+    icon = "fa-solid fa-circle-check";
+    iconColor = "color:var(--neon-emerald)";
+    toast.style.borderLeftColor = "var(--neon-emerald)";
   } else if (type === "error") {
-    icon = "fa-solid fa-triangle-exclamation text-rose-400";
-    borderClass = "border-rose-500/30 bg-slate-950/90 text-slate-200";
-    barColor = "bg-rose-400";
+    icon = "fa-solid fa-triangle-exclamation";
+    iconColor = "color:var(--velvet-bright)";
+    toast.style.borderLeftColor = "var(--velvet-bright)";
   } else if (type === "warning") {
-    icon = "fa-solid fa-bell text-amber-400";
-    borderClass = "border-amber-500/30 bg-slate-950/90 text-slate-200";
-    barColor = "bg-amber-400";
+    icon = "fa-solid fa-bell";
+    iconColor = "color:var(--gold-bright)";
+    toast.style.borderLeftColor = "var(--gold-bright)";
   }
 
-  toast.className += borderClass;
-
   toast.innerHTML = `
-    <div class="flex items-start gap-3">
-      <i class="${icon} text-lg mt-0.5 shrink-0"></i>
-      <div class="text-xs font-medium leading-relaxed">${message}</div>
-    </div>
-    <button onclick="this.closest('.cinema-toast').remove()" class="text-slate-400 hover:text-white transition shrink-0">
-      <i class="fa-solid fa-xmark text-sm"></i>
+    <i class="${icon}" style="${iconColor};font-size:18px;margin-top:2px;flex-shrink:0"></i>
+    <div style="flex:1;font-weight:500;line-height:1.5">${message}</div>
+    <button onclick="this.closest('.cinema-toast').remove()" style="background:none;border:none;color:var(--text-ash);cursor:pointer;padding:0 4px;font-size:14px">
+      <i class="fa-solid fa-xmark"></i>
     </button>
   `;
 
@@ -175,7 +164,7 @@ function showAlert(message, type = "info") {
   }, 5000);
 }
 
-function hideAlert() {
+function hideAlert()unction hideAlert() {
   const container = document.getElementById("cinema-toast-container");
   if (container) container.innerHTML = "";
 }
@@ -1324,107 +1313,136 @@ async function loadMonitors() {
 function createMonitorCard(m) {
   const card = document.createElement("div");
   card.id = `monitor-card-${m.id}`;
-  card.className = "monitor-card cinema-card rounded-2xl p-5 space-y-4 shadow-xl flex flex-col justify-between relative overflow-hidden transition-all";
+  card.className = "ticket-card monitor-card";
 
-  let badgeColor = "bg-slate-800 text-slate-300 border-slate-700";
-  let statusIcon = "fa-solid fa-clock";
+  let statusClass = "active";
+  let statusIcon = "fa-solid fa-satellite-dish";
+  let statusText = "LIVE RADAR";
 
   if (m.status === "ACTIVE") {
-    badgeColor = "bg-emerald-500/10 text-emerald-400 border-emerald-500/30";
-    statusIcon = "fa-solid fa-circle-dot fa-fade";
+    statusClass = "active";
+    statusIcon = "fa-solid fa-satellite-dish";
+    statusText = "LIVE RADAR";
   } else if (m.status === "TRIGGERED") {
-    badgeColor = "bg-rose-500/10 text-rose-400 border-rose-500/30";
+    statusClass = "triggered";
     statusIcon = "fa-solid fa-bell";
+    statusText = "TICKETS FOUND!";
   } else if (m.status === "PAUSED") {
-    badgeColor = "bg-amber-500/10 text-amber-400 border-amber-500/30";
+    statusClass = "paused";
     statusIcon = "fa-solid fa-pause";
+    statusText = "PAUSED";
   }
 
-  const d = m.target_date;
+  const d = m.target_date || "";
   const displayDate = d.length === 8 ? `${d.substring(6,8)}/${d.substring(4,6)}/${d.substring(0,4)}` : d;
 
   let ruleSummary = m.rule_type;
   if (m.rule_type === "RANGE") {
-    ruleSummary = `Row ${m.rule_payload.row}: Seats ${m.rule_payload.start}-${m.rule_payload.end}`;
+    ruleSummary = `Row ${m.rule_payload?.row}: Seats ${m.rule_payload?.start}-${m.rule_payload?.end}`;
   } else if (m.rule_type === "EXACT") {
-    ruleSummary = `Seats: ${(m.rule_payload.seats || []).join(", ")}`;
+    ruleSummary = `Seats: ${(m.rule_payload?.seats || []).join(", ")}`;
   } else if (m.rule_type === "CONSECUTIVE") {
-    ruleSummary = `${m.rule_payload.count} Consecutive Seats`;
+    ruleSummary = `${m.rule_payload?.count} Consecutive Seats`;
   } else if (m.rule_type === "BOOKING_OPEN") {
     ruleSummary = "Booking Open Alert";
+  } else if (m.rule_type === "ZONES") {
+    const count = m.rule_payload?.zones?.length || 1;
+    ruleSummary = `${count} Seat Zone${count > 1 ? 's' : ''} Monitored`;
   }
 
+  const screenBadge = (m.rule_payload?.screen_filter && m.rule_payload.screen_filter !== 'ALL')
+    ? `<span style="margin-left:6px;padding:2px 6px;border-radius:4px;background:rgba(212,175,55,0.2);color:var(--gold-bright);border:1px solid rgba(212,175,55,0.4);font-size:10px;font-family:'Courier Prime',monospace">⭐ ${m.rule_payload.screen_filter}</span>`
+    : '';
+
   card.innerHTML = `
-    <div class="space-y-3">
-      <div class="flex items-start justify-between gap-2">
+    <!-- Ticket Notches -->
+    <div class="ticket-notch-left"></div>
+    <div class="ticket-notch-right"></div>
+
+    <!-- Main Ticket Body -->
+    <div>
+      <div class="ticket-header">
         <div>
-          <h3 class="text-base font-bold text-white leading-tight">${m.movie_title}</h3>
-          <p class="text-xs text-slate-400 mt-0.5"><i class="fa-solid fa-location-dot mr-1 text-slate-500"></i>${m.venue_name}</p>
+          <div class="ticket-admit-badge">
+            <i class="fa-solid fa-film"></i> ADMIT ONE • CINEMA PASS
+          </div>
+          <h3 class="ticket-movie-title">${m.movie_title}</h3>
+          <p class="ticket-venue">
+            <i class="fa-solid fa-location-dot"></i> ${m.venue_name}
+          </p>
         </div>
-        <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold border flex items-center gap-1.5 ${badgeColor}">
-          <i class="${statusIcon}"></i> ${m.status}
-        </span>
+        <div class="ticket-status-stamp ${statusClass}">
+          <i class="${statusIcon}"></i> <span>${statusText}</span>
+        </div>
       </div>
 
-      <div class="bg-slate-900/80 rounded-xl p-3 border border-slate-800/80 text-xs space-y-1.5">
-        <div class="flex justify-between text-slate-400">
-          <span>Target Date:</span>
-          <span class="text-slate-200 font-medium">${displayDate}</span>
+      <!-- Specs Box -->
+      <div class="ticket-specs-box">
+        <div class="spec-cell">
+          <span class="spec-label">TARGET SHOW DATE</span>
+          <span class="spec-val mono">${displayDate}</span>
         </div>
-        <div class="flex justify-between text-slate-400">
-          <span>Format & Screen:</span>
-          <span class="text-slate-200 font-medium">
-            ${m.format_filter || "Any Format"}
-            ${m.rule_payload?.screen_filter && m.rule_payload.screen_filter !== 'ALL' ? `<span class="ml-1 px-1.5 py-0.5 rounded text-[10px] bg-amber-500/20 text-amber-300 font-bold border border-amber-500/30">⭐ ${m.rule_payload.screen_filter}</span>` : ''}
-          </span>
+        <div class="spec-cell">
+          <span class="spec-label">FORMAT &amp; SCREEN</span>
+          <span class="spec-val gold mono">${m.format_filter || "Any Format"}${screenBadge}</span>
         </div>
-        <div class="flex justify-between text-slate-400">
-          <span>Rule:</span>
-          <span class="text-rose-400 font-semibold">${ruleSummary}</span>
+        <div class="spec-cell full-width">
+          <span class="spec-label">SEAT RADAR RULE</span>
+          <span class="spec-val crimson">${ruleSummary}</span>
         </div>
         ${m.rule_payload?.telegram_chat_id ? `
-        <div class="flex justify-between text-slate-400">
-          <span>Telegram Alert:</span>
-          <span class="text-sky-300 font-medium font-mono text-[11px] flex items-center gap-1">
-            <i class="fa-brands fa-telegram text-sky-400"></i> ${m.rule_payload.telegram_chat_id}
+        <div class="spec-cell full-width">
+          <span class="spec-label">TELEGRAM DISPATCH</span>
+          <span class="spec-val mono" style="color:var(--neon-cyan);display:flex;align-items:center;gap:6px">
+            <i class="fa-brands fa-telegram"></i> ID: ${m.rule_payload.telegram_chat_id}
           </span>
         </div>` : ''}
-      </div>
-
-      <div class="text-[11px] text-slate-400 border-l-2 border-slate-700 pl-2.5 py-0.5">
-        <span class="text-slate-500 font-medium">Status:</span> ${m.last_status_message || "Scheduled"}
+        <div class="spec-cell full-width">
+          <span class="spec-label">LAST RADAR PING</span>
+          <span class="spec-val mono" style="font-size:10px;color:var(--text-silver)">
+            <i class="fa-solid fa-satellite-dish" style="color:var(--gold-metallic);margin-right:4px"></i>${m.last_status_message || "Continuous surveillance active"}
+          </span>
+        </div>
       </div>
     </div>
 
-    <div class="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs">
-      <div class="flex items-center gap-1.5">
-        <button onclick="triggerCheckNow(${m.id})" title="Force check BookMyShow now" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition">
-          <i class="fa-solid fa-bolt text-amber-400"></i>
+    <!-- Perforated Tear Line -->
+    <div class="ticket-perforation-line"></div>
+
+    <!-- Bottom Tear-Off Stub with Barcode & Controls -->
+    <div class="ticket-stub-bar">
+      <div class="ticket-barcode-wrap">
+        <span class="ticket-barcode-lines">||| | |||| | ||| ||</span>
+        <span>#00${m.id}</span>
+      </div>
+
+      <div class="ticket-btn-group">
+        <button onclick="triggerCheckNow(${m.id})" title="Force check BookMyShow now" class="btn-ticket-icon" style="color:var(--gold-bright)">
+          <i class="fa-solid fa-bolt"></i>
         </button>
         ${
           m.status === "ACTIVE"
-            ? `<button onclick="pauseMonitor(${m.id})" title="Pause monitoring" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition">
-                 <i class="fa-solid fa-pause text-slate-400"></i>
+            ? `<button onclick="pauseMonitor(${m.id})" title="Pause monitoring" class="btn-ticket-icon">
+                 <i class="fa-solid fa-pause"></i>
                </button>`
-            : `<button onclick="resumeMonitor(${m.id})" title="Resume monitoring" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition">
-                 <i class="fa-solid fa-play text-emerald-400"></i>
+            : `<button onclick="resumeMonitor(${m.id})" title="Resume monitoring" class="btn-ticket-icon" style="color:var(--neon-emerald)">
+                 <i class="fa-solid fa-play"></i>
                </button>`
         }
-        <button onclick="viewLogs(${m.id})" title="View check history" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition">
-          <i class="fa-solid fa-clock-rotate-left text-sky-400"></i>
+        <button onclick="viewLogs(${m.id})" title="Projection booth logs" class="btn-ticket-icon" style="color:var(--neon-cyan)">
+          <i class="fa-solid fa-clock-rotate-left"></i>
         </button>
         ${
           m.booking_url
-            ? `<a href="${m.booking_url}" target="_blank" title="Open BookMyShow direct booking page" class="px-2.5 py-1.5 rounded-lg bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border border-rose-500/30 text-[11px] font-semibold flex items-center gap-1.5 transition">
-                 <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i> BMS
+            ? `<a href="${m.booking_url}" target="_blank" title="Open BookMyShow direct booking page" class="btn-ticket-icon" style="color:var(--velvet-bright)">
+                 <i class="fa-solid fa-arrow-up-right-from-square"></i>
                </a>`
             : ''
         }
+        <button onclick="deleteMonitor(${m.id})" title="Delete watcher pass" class="btn-ticket-icon danger">
+          <i class="fa-solid fa-trash-can"></i>
+        </button>
       </div>
-
-      <button onclick="deleteMonitor(${m.id})" title="Delete monitor" class="p-2 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 transition">
-        <i class="fa-solid fa-trash-can"></i>
-      </button>
     </div>
   `;
 
@@ -1473,7 +1491,7 @@ function deleteMonitor(id) {
 async function viewLogs(id) {
   const modal = document.getElementById("logs-modal");
   const content = document.getElementById("logs-content");
-  content.innerHTML = "<div class='text-slate-400'>Loading history...</div>";
+  content.innerHTML = "<div style='color:var(--text-ash);padding:14px 0'><i class='fa-solid fa-circle-notch fa-spin'></i> Retrieving projection booth records…</div>";
   modal.classList.remove("hidden");
 
   try {
@@ -1481,26 +1499,30 @@ async function viewLogs(id) {
     const logs = await res.json();
 
     if (logs.length === 0) {
-      content.innerHTML = "<div class='text-slate-500'>No check logs recorded yet.</div>";
+      content.innerHTML = "<div style='color:var(--text-ash);padding:14px 0'>No surveillance log entries recorded yet.</div>";
       return;
     }
 
-    content.innerHTML = logs.map(l => `
-      <div class="p-2.5 rounded-lg bg-slate-950 border border-slate-800/80">
-        <div class="flex justify-between text-[11px] text-slate-500 mb-1">
-          <span>${l.timestamp}</span>
-          <span class="font-bold ${l.status === 'TRIGGERED' ? 'text-rose-400' : 'text-slate-400'}">${l.status}</span>
+    content.innerHTML = logs.map(l => {
+      const isTriggered = l.status === 'TRIGGERED';
+      const statusColor = isTriggered ? 'color:var(--velvet-bright)' : 'color:var(--neon-emerald)';
+      return `
+        <div class="log-entry">
+          <div class="flex justify-between items-center" style="font-size:10px;color:var(--text-ash);margin-bottom:4px">
+            <span style="font-family:'Courier Prime',monospace">${l.timestamp}</span>
+            <span style="font-weight:700;${statusColor};font-family:'Cinzel',serif">${l.status}</span>
+          </div>
+          <div style="color:var(--text-parchment);font-size:12px">${l.message}</div>
+          ${l.seats_found ? `<div style="margin-top:4px;color:var(--neon-emerald);font-weight:700">Unlocked Seats: ${l.seats_found}</div>` : ''}
         </div>
-        <div class="text-slate-200">${l.message}</div>
-        ${l.seats_found ? `<div class="mt-1 text-emerald-400">Seats: ${l.seats_found}</div>` : ''}
-      </div>
-    `).join("");
+      `;
+    }).join("");
   } catch (err) {
-    content.innerHTML = `<div class='text-rose-400'>Failed to load logs: ${err.message}</div>`;
+    content.innerHTML = `<div style="color:var(--velvet-bright)">Failed to load projection logs: ${err.message}</div>`;
   }
 }
 
-function closeLogsModal() {
+function closeLogsModalunction closeLogsModal() {
   document.getElementById("logs-modal").classList.add("hidden");
 }
 

@@ -1,153 +1,1235 @@
 /* ============================================================
-   SeatWatch – Premium Cinematic Movie-Themed Design System
+   SEATWATCH – GRAND CINEMA PALACE DESIGN SYSTEM
+   Authentic Movie Theater Aesthetics:
+   - Velvet Curtains, 35mm Filmstrip, Projector Light Beam
+   - Dolby Atmos / 4K Laser Sound & Projection Marquee
+   - Physical Movie Ticket Stub Monitor Cards (Notched & Perforated)
+   - Hollywood Director's Clapperboard Confirmation Modal
+   - Cinema Radar Scope Activation Screen
+   - Gold VIP Metallic & Crimson Velvet Buttons
    ============================================================ */
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,600&family=Montserrat:wght@300;400;500;600;700;800&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Bebas+Neue&display=swap');
+
+/* ── CINEMA DESIGN TOKENS ─────────────────────────────────── */
 :root {
-  --cinema-bg: #07080c;
-  --cinema-card: #0d1017;
-  --cinema-crimson: #e11d48;
-  --cinema-rose: #f43f5e;
-  --cinema-gold: #fbbf24;
-  --cinema-amber: #f59e0b;
-  --cinema-cyan: #06b6d4;
-  --cinema-emerald: #10b981;
+  --cinema-black:       #050608;
+  --cinema-abyss:       #08090d;
+  --cinema-charcoal:    #0f1118;
+  --cinema-panel:       #131620;
+  --cinema-card-bg:     #12151f;
+  --cinema-border:      rgba(212, 175, 55, 0.2);
+  --cinema-border-dim:  rgba(255, 255, 255, 0.08);
+
+  /* Cinema Royal Gold */
+  --gold-pure:          #ffd700;
+  --gold-bright:        #f5d282;
+  --gold-metallic:      #d4af37;
+  --gold-dark:          #8f7324;
+  --gold-glow:          rgba(212, 175, 55, 0.35);
+
+  /* Theater Crimson Velvet */
+  --velvet-bright:      #e52b50;
+  --velvet-crimson:     #b31b31;
+  --velvet-dark:        #6b0e1d;
+  --velvet-deep:        #40060f;
+  --velvet-glow:        rgba(179, 27, 49, 0.4);
+
+  /* Screen Cyan & Neon Emerald */
+  --neon-cyan:          #00d4ff;
+  --neon-cyan-glow:     rgba(0, 212, 255, 0.35);
+  --neon-emerald:       #00f098;
+  --neon-emerald-glow:  rgba(0, 240, 152, 0.35);
+  --neon-amber:         #ffb800;
+
+  /* Typography Colors */
+  --text-parchment:     #f8f4eb;
+  --text-silver:        #c8c4bc;
+  --text-ash:           #88847c;
+  --text-shadow:        #504c44;
+
+  /* Layout Dimensions */
+  --radius-ticket:      14px;
+  --radius-sm:          6px;
+  --radius-md:          10px;
+  --radius-lg:          16px;
+  --radius-pill:        9999px;
+
+  /* Shadows */
+  --shadow-cinematic:   0 14px 40px -10px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.04);
+  --shadow-gold-ticket: 0 10px 30px -5px rgba(212, 175, 55, 0.25), 0 0 0 1px rgba(212, 175, 55, 0.3);
+  --shadow-crimson-glow: 0 0 35px rgba(179, 27, 49, 0.45);
+}
+
+/* ── BASE RESET ───────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  background-color: var(--cinema-black);
 }
 
 body {
-  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  background-color: var(--cinema-bg);
-  background-image: 
-    radial-gradient(circle at 50% 0%, rgba(225, 29, 72, 0.12) 0%, transparent 60%),
-    radial-gradient(circle at 10% 30%, rgba(6, 182, 212, 0.06) 0%, transparent 40%),
-    radial-gradient(circle at 90% 70%, rgba(251, 191, 36, 0.05) 0%, transparent 45%);
-  background-attachment: fixed;
-  color: #f1f5f9;
+  font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  background-color: var(--cinema-black);
+  color: var(--text-parchment);
   min-height: 100vh;
   position: relative;
   overflow-x: hidden;
+  padding-bottom: 60px;
 }
 
-/* Ambient Projector Beam at top of screen */
-.projector-beam {
+/* ── THEATER AUDITORIUM BACKGROUND & LIGHTING ────────────── */
+
+/* Ambient Theater Glow & Stage Lighting */
+body::before {
+  content: '';
   position: fixed;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 90vw;
-  max-width: 1100px;
-  height: 480px;
-  background: radial-gradient(ellipse at top, rgba(244, 63, 94, 0.14) 0%, rgba(6, 182, 212, 0.04) 45%, transparent 75%);
-  filter: blur(80px);
+  inset: 0;
+  background:
+    /* Top Projector Cone */
+    radial-gradient(ellipse 90% 45% at 50% -5%, rgba(212, 175, 55, 0.16) 0%, rgba(229, 43, 80, 0.08) 40%, transparent 75%),
+    /* Left Velvet Curtain Glow */
+    radial-gradient(circle 800px at 0% 40%, rgba(107, 14, 29, 0.35) 0%, transparent 60%),
+    /* Right Velvet Curtain Glow */
+    radial-gradient(circle 800px at 100% 40%, rgba(107, 14, 29, 0.35) 0%, transparent 60%),
+    /* Auditorium Floor Darkness */
+    linear-gradient(180deg, #050608 0%, #090a10 40%, #06070a 100%);
   pointer-events: none;
   z-index: 0;
 }
 
-/* Subtle Film Grain Overlay */
-.film-grain {
+/* Authentic Film Grain Texture Overlay */
+body::after {
+  content: '';
   position: fixed;
   inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  opacity: 0.028;
   pointer-events: none;
-  opacity: 0.025;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
   z-index: 1;
 }
 
-/* Brand Display Font */
-.font-cinema {
+/* ── 35MM RETRO FILMSTRIP (TOP & BOTTOM BORDERS) ─────────── */
+.filmstrip-border-top,
+.filmstrip-border-bottom {
+  position: fixed;
+  left: 0;
+  right: 0;
+  height: 12px;
+  background-color: #0b0c10;
+  border-top: 1px solid rgba(212, 175, 55, 0.3);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.filmstrip-border-top { top: 0; }
+.filmstrip-border-bottom { bottom: 0; }
+
+.filmstrip-sprockets {
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0px,
+    transparent 10px,
+    #181a24 10px,
+    #181a24 18px,
+    transparent 18px,
+    transparent 28px
+  );
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.filmstrip-sprockets::after {
+  content: '35MM KODAK CINEMA SAFETY FILM • FRAME #024 • DOLBY ATMOS® • 4K LASER SCREEN';
+  position: absolute;
+  left: 20px;
+  font-family: 'Courier Prime', monospace;
+  font-size: 7px;
+  color: rgba(212, 175, 55, 0.4);
+  letter-spacing: 4px;
+  text-transform: uppercase;
+}
+
+/* ── PROJECTOR LIGHT BEAM ────────────────────────────────── */
+.projector-lens {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 180px;
+  height: 8px;
+  background: radial-gradient(ellipse at center, rgba(255, 235, 160, 0.9) 0%, rgba(212, 175, 55, 0.5) 40%, transparent 80%);
+  filter: blur(2px);
+  z-index: 2;
+  pointer-events: none;
+}
+
+.projector-beam {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 95vw;
+  max-width: 1300px;
+  height: 600px;
+  background: conic-gradient(
+    from 170deg at 50% 0%,
+    transparent 0deg,
+    rgba(212, 175, 55, 0.05) 8deg,
+    rgba(255, 235, 170, 0.08) 10deg,
+    rgba(0, 212, 255, 0.04) 12deg,
+    transparent 20deg
+  );
+  filter: blur(40px);
+  pointer-events: none;
+  z-index: 0;
+  animation: projector-flicker 8s ease-in-out infinite;
+}
+
+@keyframes projector-flicker {
+  0%, 100% { opacity: 0.85; transform: translateX(-50%) scaleX(1); }
+  25% { opacity: 0.95; transform: translateX(-50%) scaleX(1.02); }
+  50% { opacity: 0.78; transform: translateX(-50%) scaleX(0.99); }
+  75% { opacity: 0.92; transform: translateX(-50%) scaleX(1.01); }
+}
+
+/* ── THEATER VELVET CURTAINS (LEFT & RIGHT) ───────────────── */
+.velvet-curtain-left,
+.velvet-curtain-right {
+  position: fixed;
+  top: 12px;
+  bottom: 12px;
+  width: 90px;
+  pointer-events: none;
+  z-index: 3;
+  opacity: 0.75;
+}
+
+.velvet-curtain-left {
+  left: 0;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      rgba(64, 6, 15, 0.95) 0px,
+      rgba(107, 14, 29, 0.9) 12px,
+      rgba(179, 27, 49, 0.75) 18px,
+      rgba(64, 6, 15, 0.95) 28px
+    ),
+    linear-gradient(90deg, rgba(30, 2, 7, 1) 0%, transparent 100%);
+  box-shadow: inset -10px 0 25px rgba(0, 0, 0, 0.9), 10px 0 30px rgba(0, 0, 0, 0.7);
+  border-right: 2px solid rgba(212, 175, 55, 0.3);
+}
+
+.velvet-curtain-right {
+  right: 0;
+  background:
+    repeating-linear-gradient(
+      270deg,
+      rgba(64, 6, 15, 0.95) 0px,
+      rgba(107, 14, 29, 0.9) 12px,
+      rgba(179, 27, 49, 0.75) 18px,
+      rgba(64, 6, 15, 0.95) 28px
+    ),
+    linear-gradient(270deg, rgba(30, 2, 7, 1) 0%, transparent 100%);
+  box-shadow: inset 10px 0 25px rgba(0, 0, 0, 0.9), -10px 0 30px rgba(0, 0, 0, 0.7);
+  border-left: 2px solid rgba(212, 175, 55, 0.3);
+}
+
+@media (max-width: 900px) {
+  .velvet-curtain-left,
+  .velvet-curtain-right { width: 35px; }
+}
+
+@media (max-width: 600px) {
+  .velvet-curtain-left,
+  .velvet-curtain-right { display: none; }
+}
+
+/* ── TYPOGRAPHY ───────────────────────────────────────────── */
+h1, h2, h3, .font-cinema, .cinema-title {
+  font-family: 'Cinzel', 'Playfair Display', serif;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.font-serif {
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
+.font-mono, code, pre, .ticket-serial {
+  font-family: 'Courier Prime', 'Space Mono', monospace;
+}
+
+.gold-gradient-text {
+  background: linear-gradient(135deg, #fff2b2 0%, #d4af37 50%, #aa771c 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 25px rgba(212, 175, 55, 0.4);
+}
+
+/* ── CINEMA MARQUEE SOUND SYSTEM BAR ─────────────────────── */
+.cinema-marquee-soundbar {
+  background: linear-gradient(90deg, rgba(15, 17, 24, 0.95) 0%, rgba(25, 20, 15, 0.95) 50%, rgba(15, 17, 24, 0.95) 100%);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.25);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+  padding: 5px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  font-family: 'Courier Prime', monospace;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  color: var(--text-ash);
+  text-transform: uppercase;
+  flex-wrap: wrap;
+}
+
+.soundbar-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.soundbar-item i {
+  color: var(--gold-metallic);
+  font-size: 11px;
+}
+
+.soundbar-item .dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--neon-emerald);
+  box-shadow: 0 0 8px var(--neon-emerald);
+  animation: pulse-dot 1.8s ease-in-out infinite;
+}
+
+/* ── HEADER ───────────────────────────────────────────────── */
+header.cinema-header {
+  position: sticky;
+  top: 12px;
+  z-index: 450;
+  background: rgba(8, 9, 13, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.25);
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.header-inner {
+  max-width: 1260px;
+  margin: 0 auto;
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+/* Clapperboard / Marquee Logo */
+.brand-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #1b0409 0%, #6b0e1d 50%, #d4af37 100%);
+  border: 1.5px solid rgba(212, 175, 55, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff2b2;
+  font-size: 22px;
+  box-shadow: 0 6px 20px rgba(179, 27, 49, 0.45), 0 0 15px rgba(212, 175, 55, 0.35);
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.brand-icon::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 10px;
+  background: repeating-linear-gradient(
+    -45deg,
+    #ffffff 0px,
+    #ffffff 6px,
+    #111111 6px,
+    #111111 12px
+  );
+}
+
+.brand-name {
   font-family: 'Cinzel', serif;
-  letter-spacing: 0.06em;
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--gold-bright);
+  letter-spacing: 0.12em;
+  text-shadow: 0 0 25px rgba(212, 175, 55, 0.5);
+  line-height: 1.1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.font-mono {
-  font-family: 'JetBrains Mono', monospace;
+.brand-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: rgba(179, 27, 49, 0.25);
+  border: 1px solid rgba(229, 43, 80, 0.5);
+  color: #ff7088;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  font-family: 'Montserrat', sans-serif;
 }
 
-/* Custom Scrollbars */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: #08090d;
-}
-::-webkit-scrollbar-thumb {
-  background: #272f3d;
-  border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #e11d48;
+.brand-subtitle {
+  font-size: 11px;
+  color: var(--text-ash);
+  letter-spacing: 0.04em;
+  font-family: 'Montserrat', sans-serif;
+  margin-top: 2px;
 }
 
-/* Cinema Card & Ticket Motif */
-.cinema-card {
-  background: linear-gradient(145deg, rgba(16, 20, 29, 0.85) 0%, rgba(10, 12, 18, 0.95) 100%);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+/* ── NAV TABS (VINTAGE CINEMA ADMISSION TICKETS) ─────────── */
+nav.tab-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px;
+  background: rgba(10, 11, 16, 0.85);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: var(--radius-lg);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.7);
+}
+
+.nav-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 18px;
+  border-radius: var(--radius-md);
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-silver);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+}
+
+.nav-tab:hover {
+  color: var(--text-parchment);
+  background: rgba(212, 175, 55, 0.08);
+  border-color: rgba(212, 175, 55, 0.2);
+}
+
+.nav-tab.active {
+  background: linear-gradient(135deg, rgba(107, 14, 29, 0.6) 0%, rgba(212, 175, 55, 0.18) 100%);
+  border-color: rgba(212, 175, 55, 0.5);
+  color: #fff2b2;
+  box-shadow: 0 4px 18px rgba(179, 27, 49, 0.35), 0 0 12px rgba(212, 175, 55, 0.25);
+}
+
+/* ── MAIN CONTAINER ───────────────────────────────────────── */
+main {
+  position: relative;
+  z-index: 10;
+  padding: 28px 0;
+}
+
+.container {
+  max-width: 1260px;
+  margin: 0 auto;
+  padding: 0 28px;
+  position: relative;
+}
+
+@media (max-width: 600px) {
+  .container { padding: 0 16px; }
+}
+
+/* ── SECTION HEADER ───────────────────────────────────────── */
+.section-header-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.15);
+}
+
+.section-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-parchment);
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+}
+
+.section-subtitle {
+  font-size: 13px;
+  color: var(--text-ash);
+  margin-top: 5px;
+}
+
+/* ── PHYSICAL MOVIE TICKET STUB CARDS (THE MONITORS) ─────── */
+#monitors-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+@media (max-width: 1100px) {
+  #monitors-list { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 720px) {
+  #monitors-list { grid-template-columns: 1fr; }
+}
+
+/* The Ticket Stub Base */
+.ticket-card,
+.monitor-card {
+  background: linear-gradient(145deg, #12141c 0%, #0d0e14 100%);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  border-left: 5px solid var(--velvet-crimson);
+  border-radius: var(--radius-ticket);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.03);
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
-.cinema-card:hover {
-  border-color: rgba(244, 63, 94, 0.3);
-  box-shadow: 0 16px 40px -10px rgba(225, 29, 72, 0.15), 0 0 0 1px rgba(244, 63, 94, 0.1) inset;
+.ticket-card:hover,
+.monitor-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(212, 175, 55, 0.55);
+  border-left-color: var(--gold-metallic);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85), 0 0 25px rgba(212, 175, 55, 0.15);
+}
+
+/* Perforated Film Strip on Top of Card */
+.ticket-card::before,
+.monitor-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--gold-metallic) 0px,
+    var(--gold-metallic) 8px,
+    transparent 8px,
+    transparent 14px
+  );
+  opacity: 0.7;
+}
+
+/* Authentic Ticket Notches (Cutouts on Sides) */
+.ticket-notch-left,
+.ticket-notch-right {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  background-color: var(--cinema-black);
+  border-radius: 50%;
+  z-index: 5;
+  box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.9);
+}
+
+.ticket-notch-left {
+  left: -8px;
+  bottom: 58px;
+  border-right: 1px solid rgba(212, 175, 55, 0.3);
+}
+
+.ticket-notch-right {
+  right: -8px;
+  bottom: 58px;
+  border-left: 1px solid rgba(212, 175, 55, 0.3);
+}
+
+/* Ticket Header */
+.ticket-header {
+  padding: 16px 20px 10px 22px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ticket-admit-badge {
+  font-family: 'Courier Prime', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--gold-metallic);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ticket-movie-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 17px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.25;
+  letter-spacing: 0.01em;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.ticket-venue {
+  font-size: 11px;
+  color: var(--text-ash);
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ticket-venue i {
+  color: var(--velvet-bright);
+}
+
+/* Live Radar Status Badge (Ink Stamp Style) */
+.ticket-status-stamp {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.ticket-status-stamp.active {
+  background: rgba(0, 240, 152, 0.12);
+  border: 1.5px solid rgba(0, 240, 152, 0.5);
+  color: var(--neon-emerald);
+}
+
+.ticket-status-stamp.triggered {
+  background: rgba(229, 43, 80, 0.15);
+  border: 1.5px solid rgba(229, 43, 80, 0.6);
+  color: #ff7088;
+  animation: pulse-glow 1.5s infinite;
+}
+
+.ticket-status-stamp.paused {
+  background: rgba(255, 184, 0, 0.12);
+  border: 1.5px solid rgba(255, 184, 0, 0.5);
+  color: var(--neon-amber);
+}
+
+/* Ticket Specifications Box (Rows, Screen, Formats) */
+.ticket-specs-box {
+  margin: 10px 18px 14px 20px;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  font-size: 11px;
+}
+
+.spec-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.spec-cell.full-width {
+  grid-column: 1 / -1;
+  border-top: 1px dashed rgba(255, 255, 255, 0.08);
+  padding-top: 8px;
+  margin-top: 2px;
+}
+
+.spec-label {
+  font-family: 'Courier Prime', monospace;
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: var(--text-ash);
+  text-transform: uppercase;
+}
+
+.spec-val {
+  font-weight: 600;
+  color: var(--text-parchment);
+  font-family: 'Montserrat', sans-serif;
+  word-break: break-word;
+}
+
+.spec-val.gold {
+  color: var(--gold-bright);
+}
+
+.spec-val.crimson {
+  color: #ff758c;
+}
+
+.spec-val.mono {
+  font-family: 'Courier Prime', monospace;
+}
+
+/* Perforated Tear Line Separating Body & Stub */
+.ticket-perforation-line {
+  height: 1px;
+  background: repeating-linear-gradient(
+    90deg,
+    rgba(212, 175, 55, 0.35) 0px,
+    rgba(212, 175, 55, 0.35) 6px,
+    transparent 6px,
+    transparent 12px
+  );
+  margin: 0;
+  position: relative;
+}
+
+/* Ticket Stub Actions Bar (Bottom Tear-Off Strip) */
+.ticket-stub-bar {
+  padding: 12px 20px 14px 20px;
+  background: rgba(6, 7, 10, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.ticket-barcode-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Courier Prime', monospace;
+  font-size: 10px;
+  color: var(--text-ash);
+}
+
+.ticket-barcode-lines {
+  letter-spacing: -1px;
+  font-size: 13px;
+  color: rgba(212, 175, 55, 0.35);
+  user-select: none;
+}
+
+.ticket-btn-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ── BUTTONS (GOLD VIP TICKET & CRIMSON VELVET) ──────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Gold VIP Cinema Ticket Button */
+.btn-primary,
+.btn-gold {
+  background: linear-gradient(135deg, #aa771c 0%, #d4af37 40%, #fff2b2 70%, #aa771c 100%);
+  background-size: 200% auto;
+  color: #1a0e00;
+  border-color: rgba(255, 235, 160, 0.6);
+  box-shadow: 0 6px 22px rgba(212, 175, 55, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  font-weight: 800;
+}
+
+.btn-primary:hover,
+.btn-gold:hover {
+  background-position: right center;
+  box-shadow: 0 8px 30px rgba(212, 175, 55, 0.5), 0 0 15px rgba(255, 235, 160, 0.5);
+  transform: translateY(-2px);
+  color: #0d0700;
+  text-decoration: none;
+}
+
+/* Crimson Velvet Button */
+.btn-danger,
+.btn-velvet {
+  background: linear-gradient(135deg, #40060f 0%, #b31b31 50%, #e52b50 100%);
+  color: #fff;
+  border-color: rgba(229, 43, 80, 0.5);
+  box-shadow: 0 4px 18px rgba(179, 27, 49, 0.35);
+}
+
+.btn-danger:hover,
+.btn-velvet:hover {
+  background: linear-gradient(135deg, #6b0e1d 0%, #e52b50 60%, #ff5577 100%);
+  box-shadow: 0 6px 26px rgba(229, 43, 80, 0.55);
+  transform: translateY(-2px);
+  color: #fff;
+}
+
+/* Cinema Secondary (Dark Charcoal & Silver) */
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-silver);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border-color: rgba(212, 175, 55, 0.35);
+  transform: translateY(-1px);
+}
+
+/* Telegram Sky Blue Button */
+.btn-telegram {
+  background: linear-gradient(135deg, rgba(0, 136, 204, 0.35) 0%, rgba(0, 180, 255, 0.25) 100%);
+  color: #66ccff;
+  border: 1px solid rgba(0, 180, 255, 0.5);
+  box-shadow: 0 4px 16px rgba(0, 136, 204, 0.25);
+}
+
+.btn-telegram:hover {
+  background: linear-gradient(135deg, rgba(0, 136, 204, 0.6) 0%, rgba(0, 180, 255, 0.4) 100%);
+  color: #ffffff;
+  box-shadow: 0 6px 22px rgba(0, 180, 255, 0.45);
   transform: translateY(-2px);
 }
 
-/* Perforated Ticket Divider */
-.perforated-line {
-  background-image: linear-gradient(to right, rgba(255, 255, 255, 0.12) 50%, transparent 50%);
-  background-size: 10px 1px;
-  background-repeat: repeat-x;
-  height: 1px;
+/* Button Sizing */
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 10px;
+  gap: 5px;
+  border-radius: var(--radius-sm);
 }
 
-/* Neon Glow Utilities */
-.neon-glow-rose {
-  box-shadow: 0 0 25px -4px rgba(225, 29, 72, 0.5);
-}
-.neon-glow-cyan {
-  box-shadow: 0 0 25px -4px rgba(6, 182, 212, 0.5);
-}
-.neon-glow-gold {
-  box-shadow: 0 0 25px -4px rgba(251, 191, 36, 0.5);
+.btn-lg {
+  padding: 14px 34px;
+  font-size: 14px;
+  border-radius: var(--radius-lg);
+  letter-spacing: 0.08em;
 }
 
-/* Nav Tabs */
-.nav-tab {
+/* Ticket Action Icon Buttons */
+.btn-ticket-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-silver);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 12px;
+}
+
+.btn-ticket-icon:hover {
+  background: rgba(212, 175, 55, 0.15);
+  border-color: rgba(212, 175, 55, 0.4);
+  color: var(--gold-bright);
+  transform: scale(1.08);
+}
+
+.btn-ticket-icon.danger:hover {
+  background: rgba(229, 43, 80, 0.2);
+  border-color: rgba(229, 43, 80, 0.5);
+  color: #ff6078;
+}
+
+/* ── FORM CARDS & CONTROLS (THE WIZARD) ──────────────────── */
+.cinema-card,
+.card {
+  background: linear-gradient(145deg, #11131a 0%, #0d0f15 100%);
+  border: 1px solid var(--cinema-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-cinematic);
   position: relative;
+  overflow: hidden;
+}
+
+.card-padded {
+  padding: 28px 32px;
+}
+
+@media (max-width: 600px) {
+  .card-padded { padding: 20px 16px; }
+}
+
+/* Reel Step Markers (Step 1, Step 2, etc.) */
+.reel-step-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'Cinzel', serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--gold-bright);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.reel-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #40060f 0%, #b31b31 100%);
+  border: 1.5px solid var(--gold-metallic);
+  color: #fff2b2;
+  font-family: 'Courier Prime', monospace;
+  font-size: 11px;
+  font-weight: 800;
+  flex-shrink: 0;
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.35);
+}
+
+/* Form Inputs & Selects */
+.form-select,
+.form-input {
+  width: 100%;
+  background: #090a0f;
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  font-size: 13px;
+  color: var(--text-parchment);
+  font-family: 'Montserrat', sans-serif;
+  transition: all 0.25s ease;
+  outline: none;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.6);
+}
+
+.form-select:focus,
+.form-input:focus {
+  border-color: var(--gold-metallic);
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15), inset 0 2px 4px rgba(0, 0, 0, 0.6);
+  background: #0d0f17;
+}
+
+.form-select option {
+  background-color: #0d0f17;
+  color: var(--text-parchment);
+}
+
+.form-input::placeholder {
+  color: var(--text-ash);
+}
+
+/* City Buttons (Miniature Theater Tokens) */
+.popular-city-btn {
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text-silver);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Montserrat', sans-serif;
+  letter-spacing: 0.03em;
+}
+
+.popular-city-btn:hover {
+  background: rgba(212, 175, 55, 0.1);
+  border-color: rgba(212, 175, 55, 0.35);
+  color: var(--gold-bright);
+}
+
+.popular-city-btn.active {
+  background: linear-gradient(135deg, rgba(107, 14, 29, 0.7) 0%, rgba(212, 175, 55, 0.25) 100%);
+  border-color: var(--gold-metallic);
+  color: #fff2b2;
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.3);
+}
+
+#popular-cities-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Format & Screen Experience Cards (Dolby 3D, IMAX, 2D) */
+#formats-cards-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+@media (max-width: 650px) {
+  #formats-cards-container { grid-template-columns: 1fr; }
+}
+
+.format-card {
+  background: rgba(8, 9, 14, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  position: relative;
+}
+
+.format-card:hover {
+  border-color: rgba(212, 175, 55, 0.4);
+  background: rgba(212, 175, 55, 0.04);
+  transform: translateY(-2px);
+}
+
+.format-card.selected,
+.format-card.border-rose-500 {
+  border-color: var(--gold-metallic) !important;
+  background: linear-gradient(145deg, rgba(107, 14, 29, 0.35) 0%, rgba(212, 175, 55, 0.1) 100%) !important;
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.2), inset 0 0 0 1px rgba(212, 175, 55, 0.3);
+}
+
+/* Rule Type Selector */
+#rule-type-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+@media (max-width: 650px) {
+  #rule-type-container { grid-template-columns: 1fr; }
+}
+
+.rule-type-btn {
+  background: rgba(8, 9, 14, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  text-align: left;
+  color: var(--text-silver);
+}
+
+.rule-type-btn:hover {
+  border-color: rgba(212, 175, 55, 0.35);
+  color: #fff;
+}
+
+.rule-type-btn.active {
+  border-color: var(--gold-metallic);
+  background: linear-gradient(145deg, rgba(107, 14, 29, 0.4) 0%, rgba(212, 175, 55, 0.15) 100%);
+  color: #fff;
+  box-shadow: 0 0 18px rgba(212, 175, 55, 0.25);
+}
+
+/* Zone Selection Blocks */
+.zone-card {
+  background: rgba(6, 7, 10, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
   transition: all 0.25s ease;
 }
-.nav-tab.active {
-  background: linear-gradient(135deg, rgba(225, 29, 72, 0.25) 0%, rgba(15, 23, 42, 0.8) 100%);
-  border: 1px solid rgba(244, 63, 94, 0.4);
-  color: #ffffff;
-  box-shadow: 0 4px 15px -3px rgba(225, 29, 72, 0.3);
+
+.zone-card.active,
+.zone-card.border-rose-500\/70 {
+  border-color: var(--gold-metallic) !important;
+  background: rgba(212, 175, 55, 0.06) !important;
+  box-shadow: 0 0 16px rgba(212, 175, 55, 0.15);
 }
 
-/* Radar Animation for Monitor Creation & Scanning */
-@keyframes radar-sweep {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+/* Dashed Add Button */
+.btn-dashed {
+  width: 100%;
+  padding: 12px;
+  background: transparent;
+  border: 1.5px dashed rgba(212, 175, 55, 0.35);
+  border-radius: var(--radius-md);
+  color: var(--gold-bright);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Montserrat', sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
-@keyframes radar-blip {
-  0% {
-    opacity: 0;
-    transform: scale(0.6);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.1);
-  }
-  100% {
-    opacity: 0.3;
-    transform: scale(1);
-  }
+.btn-dashed:hover {
+  border-color: var(--gold-metallic);
+  background: rgba(212, 175, 55, 0.08);
+  color: #fff2b2;
+  box-shadow: 0 0 16px rgba(212, 175, 55, 0.2);
+}
+
+/* ── MODALS (HOLLYWOOD CLAPPERBOARD & RADAR SCOPE) ───────── */
+.cinema-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(3, 4, 6, 0.9);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* Director's Clapperboard Confirmation Modal */
+.clapperboard-modal {
+  max-width: 480px;
+  width: 100%;
+  background: #0d0f16;
+  border: 1.5px solid var(--gold-metallic);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.95), 0 0 40px rgba(212, 175, 55, 0.25);
+  position: relative;
+  overflow: hidden;
+  animation: modal-drop 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modal-drop {
+  from { opacity: 0; transform: scale(0.92) translateY(-20px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Clapperboard Top Strip (White & Black Chevron Stripes) */
+.clapperboard-top {
+  height: 22px;
+  background: repeating-linear-gradient(
+    -45deg,
+    #ffffff 0px,
+    #ffffff 12px,
+    #111111 12px,
+    #111111 24px
+  );
+  border-bottom: 2px solid #000;
+  position: relative;
+}
+
+.clapperboard-body {
+  padding: 24px 28px;
+}
+
+.clapperboard-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 8px;
+}
+
+.clapperboard-desc {
+  font-size: 13px;
+  color: var(--text-silver);
+  line-height: 1.6;
+}
+
+/* Cinema Radar Scope Modal */
+.radar-modal {
+  max-width: 540px;
+  width: 100%;
+  background: radial-gradient(circle at 50% 30%, #151824 0%, #0c0e14 100%);
+  border: 1.5px solid var(--gold-metallic);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.95), 0 0 50px rgba(212, 175, 55, 0.3);
+  padding: 32px 28px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  animation: modal-drop 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Circular Radar Screen */
+.radar-scope {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  border: 2px solid rgba(0, 212, 255, 0.5);
+  background: #040810;
+  position: relative;
+  margin: 0 auto 20px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 35px rgba(0, 212, 255, 0.25), inset 0 0 30px rgba(0, 0, 0, 0.9);
 }
 
 .radar-sweep-beam {
@@ -157,51 +1239,125 @@ body {
   width: 50%;
   height: 50%;
   transform-origin: top left;
-  background: conic-gradient(from 0deg, rgba(6, 182, 212, 0.5) 0deg, rgba(6, 182, 212, 0) 60deg);
-  animation: radar-sweep 2.2s linear infinite;
+  background: conic-gradient(from 0deg, rgba(0, 212, 255, 0.7) 0deg, rgba(0, 212, 255, 0) 65deg);
+  animation: radar-sweep 2s linear infinite;
   pointer-events: none;
 }
 
-/* Ticket Stamping Animation */
-@keyframes ticket-stamp {
-  0% {
-    opacity: 0;
-    transform: scale(1.8) rotate(-12deg);
-  }
-  60% {
-    opacity: 1;
-    transform: scale(0.95) rotate(-5deg);
-  }
-  80% {
-    transform: scale(1.02) rotate(-5deg);
-  }
-  100% {
-    transform: scale(1) rotate(-5deg);
-  }
+.radar-rings {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at center, transparent 30px, rgba(0, 212, 255, 0.2) 31px, transparent 32px),
+    radial-gradient(circle at center, transparent 55px, rgba(0, 212, 255, 0.15) 56px, transparent 57px);
 }
 
+.radar-crosshair-h {
+  position: absolute;
+  width: 100%;
+  height: 1px;
+  background: rgba(0, 212, 255, 0.25);
+}
+
+.radar-crosshair-v {
+  position: absolute;
+  height: 100%;
+  width: 1px;
+  background: rgba(0, 212, 255, 0.25);
+}
+
+.radar-blip {
+  position: relative;
+  z-index: 10;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(229, 43, 80, 0.3);
+  border: 2px solid var(--velvet-bright);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--velvet-bright);
+  font-size: 15px;
+  box-shadow: 0 0 20px rgba(229, 43, 80, 0.7);
+  animation: pulse-glow 1.4s ease-in-out infinite;
+}
+
+@keyframes radar-sweep {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 10px rgba(229, 43, 80, 0.4); }
+  50% { box-shadow: 0 0 28px rgba(229, 43, 80, 0.85); }
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.3); }
+}
+
+/* Stamped Seal Badge */
 .ticket-stamp-badge {
-  animation: ticket-stamp 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  display: inline-block;
+  padding: 4px 12px;
+  border: 2px solid rgba(0, 240, 152, 0.8);
+  border-radius: 4px;
+  color: var(--neon-emerald);
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  background: rgba(0, 240, 152, 0.12);
+  transform: rotate(-6deg);
 }
 
-/* Modal backdrop blur */
-.cinema-modal-backdrop {
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  background: rgba(5, 7, 12, 0.85);
+/* ── PROJECTION BOOTH LOGS MODAL ─────────────────────────── */
+.logs-modal-box {
+  background: #090b10;
+  border: 1.5px solid var(--gold-metallic);
+  border-radius: var(--radius-lg);
+  max-width: 680px;
+  width: 100%;
+  padding: 24px;
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.95);
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
 }
 
-/* Floating Toast Notification Container */
+#logs-content {
+  overflow-y: auto;
+  flex: 1;
+  font-family: 'Courier Prime', monospace;
+  font-size: 12px;
+  margin: 16px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.log-entry {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+}
+
+/* ── CINEMA TOAST NOTIFICATIONS ───────────────────────────── */
 #cinema-toast-container {
   position: fixed;
-  top: 24px;
-  right: 24px;
+  top: 30px;
+  right: 30px;
   z-index: 9999;
   display: flex;
   flex-direction: column;
   gap: 12px;
   max-width: 420px;
-  width: calc(100vw - 48px);
+  width: calc(100vw - 60px);
   pointer-events: none;
 }
 
@@ -210,34 +1366,122 @@ body {
   transform: translateX(120%);
   opacity: 0;
   transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  background: linear-gradient(145deg, #131622 0%, #0d0f17 100%);
+  border: 1px solid var(--gold-metallic);
+  border-left: 5px solid var(--gold-metallic);
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  font-size: 13px;
+  color: var(--text-parchment);
 }
 
-.cinema-toast.show {
-  transform: translateX(0);
-  opacity: 1;
+.cinema-toast.show { transform: translateX(0); opacity: 1; }
+.cinema-toast.hide { transform: translateX(120%); opacity: 0; }
+
+/* ── EMPTY STATE ─────────────────────────────────────────── */
+.empty-state {
+  text-align: center;
+  padding: 60px 24px;
+  background: rgba(10, 12, 18, 0.5);
+  border: 1px dashed rgba(212, 175, 55, 0.25);
+  border-radius: var(--radius-lg);
 }
 
-.cinema-toast.hide {
-  transform: translateX(120%);
-  opacity: 0;
+.empty-state-icon {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: rgba(212, 175, 55, 0.1);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  color: var(--gold-bright);
+  margin: 0 auto 18px;
 }
 
-/* Confetti particles */
+/* ── UTILITY HELPERS (COMPATIBILITY) ─────────────────────── */
+.hidden { display: none !important; }
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.items-center { align-items: center; }
+.items-start { align-items: flex-start; }
+.justify-between { justify-content: space-between; }
+.justify-center { justify-content: center; }
+.justify-end { justify-content: flex-end; }
+.gap-2 { gap: 8px; }
+.gap-3 { gap: 12px; }
+.gap-4 { gap: 16px; }
+.gap-6 { gap: 24px; }
+.flex-wrap { flex-wrap: wrap; }
+.flex-1 { flex: 1; }
+.w-full { width: 100%; }
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-right { text-align: right; }
+.mt-1 { margin-top: 4px; }
+.mt-2 { margin-top: 8px; }
+.mt-3 { margin-top: 12px; }
+.mt-4 { margin-top: 16px; }
+.mb-1 { margin-bottom: 4px; }
+.mb-2 { margin-bottom: 8px; }
+.mb-4 { margin-bottom: 16px; }
+.mb-6 { margin-bottom: 24px; }
+.pt-1 { padding-top: 4px; }
+.pt-2 { padding-top: 8px; }
+.pt-4 { padding-top: 16px; }
+.space-y-2 > * + * { margin-top: 8px; }
+.space-y-3 > * + * { margin-top: 12px; }
+.space-y-4 > * + * { margin-top: 16px; }
+.space-y-6 > * + * { margin-top: 24px; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media (max-width: 650px) { .grid-2 { grid-template-columns: 1fr; } }
+.max-w-2xl { max-width: 680px; margin-left: auto; margin-right: auto; }
+.max-w-4xl { max-width: 920px; margin-left: auto; margin-right: auto; }
+
+/* Compatibility mapping for any remaining Tailwind class usages in JS */
+.text-white { color: #ffffff !important; }
+.text-slate-200 { color: #f0e8d8 !important; }
+.text-slate-300 { color: #c8c4bc !important; }
+.text-slate-400 { color: #88847c !important; }
+.text-slate-500 { color: #5a5244 !important; }
+.text-amber-300 { color: var(--gold-bright) !important; }
+.text-amber-400 { color: var(--gold-metallic) !important; }
+.text-rose-300 { color: #ffa0b0 !important; }
+.text-rose-400 { color: #ff7088 !important; }
+.text-emerald-400 { color: var(--neon-emerald) !important; }
+.text-sky-300 { color: #80d4ff !important; }
+.text-sky-400 { color: #33b5e5 !important; }
+.bg-slate-900 { background-color: #0d0f17 !important; }
+.bg-slate-950 { background-color: #06070a !important; }
+.bg-slate-800 { background-color: #161922 !important; }
+.border-slate-800 { border-color: rgba(255, 255, 255, 0.08) !important; }
+.border-slate-700 { border-color: rgba(255, 255, 255, 0.15) !important; }
+.rounded-xl { border-radius: var(--radius-md) !important; }
+.rounded-2xl { border-radius: var(--radius-lg) !important; }
+.rounded-full { border-radius: 9999px !important; }
+
+/* Confetti Falling Particle */
 .confetti-particle {
   position: absolute;
   width: 8px;
   height: 8px;
   pointer-events: none;
-  animation: fall 1.5s ease-out forwards;
+  animation: fall 1.6s ease-out forwards;
 }
 
 @keyframes fall {
-  0% {
-    opacity: 1;
-    transform: translate(0, 0) rotate(0deg);
-  }
-  100% {
-    opacity: 0;
-    transform: translate(var(--tx), var(--ty)) rotate(720deg);
-  }
+  0% { opacity: 1; transform: translate(0, 0) rotate(0deg); }
+  100% { opacity: 0; transform: translate(var(--tx), var(--ty)) rotate(720deg); }
 }
+
+/* Custom Scrollbars */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--cinema-black); }
+::-webkit-scrollbar-thumb { background: #262030; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--velvet-crimson); }

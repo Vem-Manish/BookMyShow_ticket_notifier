@@ -3,647 +3,700 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SeatWatch – BookMyShow Seat Availability Monitor</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <title>SeatWatch – Cinema Radar & BookMyShow Ticket Monitor</title>
+  <meta name="description" content="SeatWatch monitors BookMyShow every 2 minutes and sends instant Telegram alerts when your preferred cinema seats become available. Never miss a blockbuster again.">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="/static/styles.css">
 </head>
-<body class="min-h-screen text-slate-100 font-sans antialiased selection:bg-rose-500 selection:text-white">
+<body>
 
-  <!-- Ambient Projector Light Beam and Film Grain Texture -->
+  <!-- 35mm Retro Filmstrip Top Border -->
+  <div class="filmstrip-border-top">
+    <div class="filmstrip-sprockets"></div>
+  </div>
+
+  <!-- Theater Velvet Curtains (Left & Right) -->
+  <div class="velvet-curtain-left"></div>
+  <div class="velvet-curtain-right"></div>
+
+  <!-- Projector Lens & Light Beam -->
+  <div class="projector-lens"></div>
   <div class="projector-beam"></div>
-  <div class="film-grain"></div>
 
-  <!-- Header -->
-  <header class="border-b border-rose-950/40 bg-black/70 backdrop-blur-xl sticky top-0 z-40 shadow-2xl">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-4">
-      <div class="flex items-center space-x-3.5">
-        <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-rose-600 via-rose-500 to-amber-500 flex items-center justify-center text-white font-bold shadow-lg shadow-rose-600/30 border border-white/20">
-          <i class="fa-solid fa-clapperboard text-xl"></i>
+  <!-- Cinema Marquee Sound & Projection Status Bar -->
+  <div class="cinema-marquee-soundbar">
+    <div class="soundbar-item">
+      <span class="dot"></span>
+      <i class="fa-solid fa-volume-high"></i>
+      <span>DOLBY ATMOS® 7.1 SURROUND</span>
+    </div>
+    <div class="soundbar-item">
+      <i class="fa-solid fa-video"></i>
+      <span>4K LASER RGB DUAL PROJECTION</span>
+    </div>
+    <div class="soundbar-item">
+      <i class="fa-solid fa-satellite-dish"></i>
+      <span>BOOKMYSHOW RADAR ENGINE: ONLINE</span>
+    </div>
+    <div class="soundbar-item">
+      <i class="fa-solid fa-shield-halved"></i>
+      <span>THX CINEMA CERTIFIED</span>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- GRAND CINEMA HEADER                                     -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <header class="cinema-header">
+    <div class="header-inner">
+      <div class="brand">
+        <div class="brand-icon">
+          <i class="fa-solid fa-clapperboard"></i>
         </div>
         <div>
-          <div class="flex items-center gap-2.5">
-            <h1 class="text-xl font-black font-cinema tracking-widest text-white flex items-center gap-2">
-              SEATWATCH
-            </h1>
-            <span class="text-[10px] px-2 py-0.5 rounded-full bg-rose-500/15 text-rose-400 border border-rose-500/30 font-bold uppercase tracking-wider flex items-center gap-1">
-              <span class="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse"></span> CINEMA RADAR
+          <div class="flex items-center gap-2">
+            <span class="brand-name">SEATWATCH</span>
+            <span class="brand-badge">
+              <span class="dot"></span>
+              Cinema Radar
             </span>
           </div>
-          <p class="text-xs text-slate-400 font-medium">Automated BookMyShow Seat Monitor & Ticket Alert System</p>
+          <p class="brand-subtitle">Automated BookMyShow Seat Monitor &amp; Ticket Alert System</p>
         </div>
       </div>
 
-      <!-- Navigation Tabs -->
-      <nav class="flex items-center space-x-1.5 bg-slate-950/80 p-1.5 rounded-2xl border border-slate-800/80 shadow-inner">
-        <button id="tab-monitors-btn" class="nav-tab active px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all text-white" onclick="switchTab('monitors')">
-          <i class="fa-solid fa-satellite-dish mr-2 text-rose-400"></i>Active Radar
+      <!-- Navigation Tabs (Cinema Admission Tickets) -->
+      <nav class="tab-nav">
+        <button id="tab-monitors-btn" class="nav-tab active" onclick="switchTab('monitors')">
+          <i class="fa-solid fa-satellite-dish" style="color:var(--velvet-bright)"></i>
+          <span>Active Radar</span>
         </button>
-        <button id="tab-create-btn" class="nav-tab px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all text-slate-400 hover:text-white" onclick="switchTab('create')">
-          <i class="fa-solid fa-ticket mr-2 text-amber-400"></i>New Watcher
+        <button id="tab-create-btn" class="nav-tab" onclick="switchTab('create')">
+          <i class="fa-solid fa-ticket" style="color:var(--gold-bright)"></i>
+          <span>New Watcher</span>
         </button>
-        <button id="tab-settings-btn" class="nav-tab px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all text-slate-400 hover:text-white" onclick="switchTab('settings')">
-          <i class="fa-brands fa-telegram mr-2 text-sky-400"></i>Telegram Bot
+        <button id="tab-settings-btn" class="nav-tab" onclick="switchTab('settings')">
+          <i class="fa-brands fa-telegram" style="color:var(--neon-cyan)"></i>
+          <span>Telegram Bot</span>
         </button>
       </nav>
     </div>
   </header>
 
-  <!-- Main Container -->
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- MAIN CINEMA STAGE                                       -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <main>
+    <div class="container">
 
-    <!-- Floating Cinematic Toast Container -->
-    <div id="cinema-toast-container"></div>
-      <button onclick="hideAlert()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
-    </div>
+      <!-- Floating Cinema Toast Container -->
+      <div id="cinema-toast-container"></div>
 
-    <!-- ========================================== -->
-    <!-- TAB 1: ACTIVE MONITORS DASHBOARD          -->
-    <!-- ========================================== -->
-    <section id="tab-monitors" class="space-y-6">
-      <div class="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h2 class="text-2xl font-bold tracking-tight text-white">Active Seat Monitors</h2>
-          <p class="text-sm text-slate-400">Background engine checks BookMyShow every 2–3 minutes for your preferred conditions.</p>
+      <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+      <!-- TAB 1: ACTIVE RADAR DASHBOARD (TICKET STUBS)       -->
+      <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+      <section id="tab-monitors">
+        <div class="section-header-row">
+          <div>
+            <h2 class="section-title">Active Seat Radar</h2>
+            <p class="section-subtitle">Automated background surveillance scans BookMyShow every 2 minutes for your preferred seats.</p>
+          </div>
+          <div class="flex gap-3">
+            <button onclick="loadMonitors()" class="btn btn-secondary">
+              <i class="fa-solid fa-rotate-right"></i> Refresh
+            </button>
+            <button onclick="switchTab('create')" class="btn btn-gold">
+              <i class="fa-solid fa-plus"></i> Create New Watch
+            </button>
+          </div>
         </div>
-        <div class="flex items-center gap-3">
-          <button onclick="loadMonitors()" class="px-3.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-medium border border-slate-700 transition flex items-center gap-2">
-            <i class="fa-solid fa-rotate-right"></i> Refresh
+
+        <!-- Physical Ticket Stubs Grid -->
+        <div id="monitors-list">
+          <!-- Rendered dynamically as physical Movie Ticket Stubs via JS -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="monitors-empty" class="hidden empty-state">
+          <div class="empty-state-icon">
+            <i class="fa-solid fa-film"></i>
+          </div>
+          <h3 class="font-cinema" style="font-size:20px;color:var(--gold-bright);margin-bottom:8px">No Cinema Watchers Running</h3>
+          <p style="max-width:440px;margin:0 auto 24px;color:var(--text-silver);font-size:13px">
+            You don't have any movies or screens being monitored. Lock onto a show now to get alerted the instant bookings open or premium seats become available!
+          </p>
+          <button onclick="switchTab('create')" class="btn btn-gold btn-lg">
+            <i class="fa-solid fa-plus"></i> Create Your First Watcher Ticket
           </button>
-          <button onclick="switchTab('create')" class="px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-sm font-semibold shadow-lg shadow-rose-600/30 transition flex items-center gap-2">
-            <i class="fa-solid fa-plus"></i> Create New Watch
-          </button>
         </div>
-      </div>
+      </section>
 
-      <!-- Monitors Container -->
-      <div id="monitors-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <!-- Rendered dynamically via JS -->
-      </div>
-
-      <!-- Empty State -->
-      <div id="monitors-empty" class="hidden text-center py-16 px-4 bg-slate-950/40 rounded-2xl border border-slate-800/80">
-        <div class="w-16 h-16 rounded-full bg-slate-800/80 mx-auto flex items-center justify-center text-slate-400 mb-4">
-          <i class="fa-solid fa-bell-slash text-2xl"></i>
-        </div>
-        <h3 class="text-lg font-semibold text-white mb-1">No Active Monitors</h3>
-        <p class="text-sm text-slate-400 max-w-md mx-auto mb-6">You don't have any movies or seats being monitored. Create one to get alerted when bookings open!</p>
-        <button onclick="switchTab('create')" class="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-sm font-semibold shadow-lg shadow-rose-600/30 transition">
-          <i class="fa-solid fa-plus mr-2"></i> Create Your First Monitor
-        </button>
-      </div>
-    </section>
-
-
-    <!-- ========================================== -->
-    <!-- TAB 2: CREATE MONITOR WIZARD              -->
-    <!-- ========================================== -->
-    <section id="tab-create" class="hidden max-w-4xl mx-auto space-y-6">
-      <div>
-        <h2 class="text-2xl font-bold tracking-tight text-white">Create BookMyShow Monitor</h2>
-        <p class="text-sm text-slate-400">Select Theatre/Screen, Date, Movie, and pick any format (Dolby 3D, IMAX, 2D) with exact seat rules.</p>
-      </div>
-
-      <div class="bg-slate-950/60 border border-slate-800 rounded-2xl p-6 sm:p-8 space-y-8 shadow-xl">
-
-        <!-- STEP 1: City Selection -->
-        <div class="space-y-3">
-          <div class="flex items-center justify-between">
-            <label class="text-sm font-semibold text-slate-200 flex items-center gap-2">
-              <span class="w-6 h-6 rounded-full bg-rose-500/20 text-rose-400 text-xs flex items-center justify-center font-bold">1</span>
-              Select City / Region
-            </label>
-            <span id="city-loader" class="hidden text-xs text-rose-400"><i class="fa-solid fa-circle-notch fa-spin mr-1"></i> Fetching live BMS cities...</span>
-          </div>
-          <div class="grid grid-cols-2 sm:grid-cols-5 gap-2" id="popular-cities-pills">
-            <!-- Popular city buttons loaded here -->
-          </div>
-          <div class="pt-1">
-            <select id="all-cities-select" class="w-full bg-slate-900 border border-slate-700/80 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-rose-500 transition" onchange="onCitySelected(this.value, this.options[this.selectedIndex].text)">
-              <option value="">-- Or choose from all 2,000+ regions --</option>
-            </select>
-          </div>
+      <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+      <!-- TAB 2: CREATE WATCHER WIZARD (FILM REELS)           -->
+      <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+      <section id="tab-create" class="hidden max-w-4xl">
+        <div class="mb-6">
+          <h2 class="section-title">Activate BookMyShow Watcher</h2>
+          <p class="section-subtitle">Configure Theatre/Screen, Date, Feature Film, Experience Format (Dolby 3D, IMAX, 2D) and Seat Radar Rules.</p>
         </div>
 
-        <!-- STEP 2 & 3: Cinema & Target Date Selection -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div class="card card-padded space-y-6">
 
-          <!-- Theatre / Cinema Selection (Screen First) -->
-          <div class="space-y-3">
-            <div class="flex items-center justify-between">
-              <label class="text-sm font-semibold text-slate-200 flex items-center gap-2">
-                <span class="w-6 h-6 rounded-full bg-rose-500/20 text-rose-400 text-xs flex items-center justify-center font-bold">2</span>
-                Select Theatre / Cinema
+          <!-- REEL 01: City Selection -->
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <label class="reel-step-label">
+                <span class="reel-badge">1</span>
+                Reel 01: Select Cinema City / Region
               </label>
-              <span id="cinemas-loader" class="hidden text-xs text-rose-400"><i class="fa-solid fa-circle-notch fa-spin mr-1"></i> Loading cinemas...</span>
+              <span id="city-loader" class="hidden" style="font-size:11px;color:var(--velvet-bright);font-weight:600">
+                <i class="fa-solid fa-circle-notch fa-spin"></i> Fetching live BookMyShow cities…
+              </span>
             </div>
-            <select id="theatre-select" class="w-full bg-slate-900 border border-slate-700/80 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-rose-500 transition" onchange="onCinemaOrDateChanged()">
-              <option value="">-- Loading cinemas... --</option>
-            </select>
-            <div class="pt-1">
-              <input type="text" id="custom-theatre-code" placeholder="Or enter 4-letter Cinema Code (e.g. ALUC, ACAS, AMBH)" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs text-slate-300 focus:outline-none focus:border-rose-500 transition" onchange="onCinemaOrDateChanged()">
+            <div id="popular-cities-pills">
+              <!-- Loaded dynamically via JS -->
             </div>
-          </div>
-
-          <!-- Target Date -->
-          <div class="space-y-3">
-            <label class="text-sm font-semibold text-slate-200 flex items-center gap-2">
-              <span class="w-6 h-6 rounded-full bg-rose-500/20 text-rose-400 text-xs flex items-center justify-center font-bold">3</span>
-              Target Booking Date
-            </label>
-            <input type="date" id="target-date-input" class="w-full bg-slate-900 border border-slate-700/80 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-rose-500 transition" onchange="onCinemaOrDateChanged()">
-            <div class="flex flex-wrap gap-2 pt-1 text-xs">
-              <button type="button" onclick="setPresetDate(0)" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300">Today</button>
-              <button type="button" onclick="setPresetDate(1)" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300">Tomorrow</button>
-              <button type="button" onclick="setPresetDate('next_sat')" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300">Next Sat</button>
-              <button type="button" onclick="setPresetDate('next_sun')" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300">Next Sun</button>
-            </div>
-            <p class="text-xs text-slate-400">You can pick future dates for which bookings have <strong>not opened yet</strong>.</p>
-          </div>
-
-        </div>
-
-        <!-- STEP 4: Live Movie Selection at that Cinema -->
-        <div class="space-y-3">
-          <div class="flex items-center justify-between">
-            <label class="text-sm font-semibold text-slate-200 flex items-center gap-2">
-              <span class="w-6 h-6 rounded-full bg-rose-500/20 text-rose-400 text-xs flex items-center justify-center font-bold">4</span>
-              Select Movie Playing at this Cinema
-            </label>
-            <span id="movies-loader" class="hidden text-xs text-rose-400"><i class="fa-solid fa-circle-notch fa-spin mr-1"></i> Checking cinema schedule...</span>
-          </div>
-          <select id="movie-select" class="w-full bg-slate-900 border border-slate-700/80 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-rose-500 transition" onchange="onMovieSelected()">
-            <option value="">-- Select Cinema and Date first --</option>
-          </select>
-          <div id="unopened-notice" class="hidden p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-300">
-            <i class="fa-solid fa-clock mr-1"></i> Bookings have not opened yet for this cinema on this date. SeatWatch will automatically monitor BookMyShow every 2–3 mins until shows go live!
-          </div>
-        </div>
-
-        <!-- STEP 5: Formats, Screens & Showtimes Selection -->
-        <div class="space-y-3" id="format-selection-container">
-          <div class="flex items-center justify-between">
-            <label class="text-sm font-semibold text-slate-200 flex items-center gap-2">
-              <span class="w-6 h-6 rounded-full bg-rose-500/20 text-rose-400 text-xs flex items-center justify-center font-bold">5</span>
-              Select Format & Screen (Dolby Cinema 3D, 2D, 3D)
-            </label>
-            <span class="text-xs text-slate-400">Choose exact language & screen experience</span>
-          </div>
-
-          <!-- All Formats Container -->
-          <div id="formats-cards-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div class="text-xs text-slate-500 col-span-2 p-4 bg-slate-900/50 rounded-xl border border-slate-800 text-center">
-              Please select a Movie to view its available screens and formats.
+            <div class="mt-2">
+              <select id="all-cities-select" class="form-select" onchange="onCitySelected(this.value, this.options[this.selectedIndex].text)">
+                <option value="">— Or select from all 2,000+ regions across India —</option>
+              </select>
             </div>
           </div>
 
-          <!-- Selected Format Hidden/Display Inputs -->
-          <input type="hidden" id="selected-event-code" value="">
-          <input type="hidden" id="selected-session-id" value="">
-          <input type="hidden" id="selected-format-name" value="">
-          <input type="hidden" id="selected-showtime-str" value="">
-          <input type="hidden" id="selected-screen-filter" value="ALL">
-        </div>
+          <!-- REEL 02 & 03: Theatre & Target Date -->
+          <div class="grid-2">
 
-        <!-- Look at Layout on BookMyShow Section -->
-        <div id="bms-layout-action-section" class="pt-4 border-t border-slate-800">
-          <div class="p-5 bg-gradient-to-r from-slate-900 via-slate-900/90 to-slate-950 border border-slate-800/80 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
-            <div class="space-y-1.5 text-center sm:text-left">
-              <div class="flex items-center justify-center sm:justify-start gap-2.5">
-                <span class="w-8 h-8 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-400 text-sm flex items-center justify-center font-bold">
-                  <i class="fa-solid fa-map-location-dot"></i>
+            <!-- Theatre Selection -->
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <label class="reel-step-label">
+                  <span class="reel-badge">2</span>
+                  Reel 02: Select Cinema Palace
+                </label>
+                <span id="cinemas-loader" class="hidden" style="font-size:11px;color:var(--velvet-bright);font-weight:600">
+                  <i class="fa-solid fa-circle-notch fa-spin"></i> Loading theatres…
                 </span>
-                <div>
-                  <h4 class="text-sm font-bold text-white flex items-center gap-2" id="bms-layout-card-title">
-                    Official BMS Screen Layout
-                  </h4>
-                  <span id="bms-layout-screen-badge" class="text-[11px] font-mono text-rose-400 font-semibold"></span>
-                </div>
               </div>
-              <p class="text-xs text-slate-400 max-w-xl" id="bms-layout-card-desc">
-                Open official BookMyShow in a new tab to see the exact screen layout, rows, and seat numbers, then configure your target row ranges and seat conditions below.
+              <select id="theatre-select" class="form-select" onchange="onCinemaOrDateChanged()">
+                <option value="">— Loading theatres… —</option>
+              </select>
+              <div class="mt-2">
+                <input type="text" id="custom-theatre-code" placeholder="Or enter 4-letter Cinema Code (e.g. ALUC, ACAS, AMBH)" class="form-input font-mono" style="font-size:12px" onchange="onCinemaOrDateChanged()">
+              </div>
+            </div>
+
+            <!-- Target Date -->
+            <div>
+              <label class="reel-step-label">
+                <span class="reel-badge">3</span>
+                Reel 03: Target Booking Date
+              </label>
+              <input type="date" id="target-date-input" class="form-input font-mono" onchange="onCinemaOrDateChanged()">
+              <div class="flex gap-2 mt-2" style="flex-wrap:wrap">
+                <button type="button" onclick="setPresetDate(0)" class="btn btn-secondary btn-sm">Today</button>
+                <button type="button" onclick="setPresetDate(1)" class="btn btn-secondary btn-sm">Tomorrow</button>
+                <button type="button" onclick="setPresetDate('next_sat')" class="btn btn-secondary btn-sm">Next Sat</button>
+                <button type="button" onclick="setPresetDate('next_sun')" class="btn btn-secondary btn-sm">Next Sun</button>
+              </div>
+              <p class="mt-2" style="font-size:11px;color:var(--text-ash)">
+                <i class="fa-solid fa-circle-info" style="color:var(--gold-metallic)"></i> You can select future dates for which bookings have <strong>not opened yet</strong>.
               </p>
             </div>
 
-            <a id="look-at-layout-bms-btn" href="#" target="_blank"
-              class="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-rose-600 via-rose-500 to-rose-600 hover:from-rose-500 hover:to-rose-500 text-white font-bold text-sm shadow-lg shadow-rose-600/30 flex items-center justify-center gap-2.5 transition transform hover:-translate-y-0.5 cursor-pointer flex-shrink-0">
-              <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
-              <span>Look at Layout on BMS</span>
-            </a>
-          </div>
-        </div>
-
-        <!-- STEP 6: Preferred Seats & Conditions -->
-        <div class="space-y-4 pt-2 border-t border-slate-800">
-          <div class="flex items-center justify-between">
-            <label class="text-sm font-semibold text-slate-200 flex items-center gap-2">
-              <span class="w-6 h-6 rounded-full bg-rose-500/20 text-rose-400 text-xs flex items-center justify-center font-bold">6</span>
-              Seat Monitoring Rule
-            </label>
-            <span class="text-xs text-slate-400">Configure multi-row ranges & consecutive seats</span>
           </div>
 
-          <!-- Rule Type Tabs -->
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            <button type="button" id="tab-btn-ZONES" class="rule-type-btn active p-3 rounded-xl border border-rose-500/40 bg-rose-500/10 text-xs font-medium text-white transition text-left" onclick="setRuleType('ZONES')">
-              <i class="fa-solid fa-table-cells-large text-rose-400 mb-1 block text-sm"></i>
-              <strong>Smart Zones & Ranges</strong>
-              <div class="text-[11px] text-slate-400 mt-0.5">e.g. Rows B-I, 12-25, 4 consecutive seats</div>
-            </button>
-            <button type="button" id="tab-btn-EXACT" class="rule-type-btn p-3 rounded-xl border border-slate-800 bg-slate-900 text-xs font-medium text-slate-300 hover:border-slate-700 transition text-left" onclick="setRuleType('EXACT')">
-              <i class="fa-solid fa-chair text-emerald-400 mb-1 block text-sm"></i>
-              <strong>Exact Specific Seats</strong>
-              <div class="text-[11px] text-slate-400 mt-0.5">e.g. G10, G11, G12</div>
-            </button>
-            <button type="button" id="tab-btn-BOOKING_OPEN" class="rule-type-btn p-3 rounded-xl border border-slate-800 bg-slate-900 text-xs font-medium text-slate-300 hover:border-slate-700 transition text-left" onclick="setRuleType('BOOKING_OPEN')">
-              <i class="fa-solid fa-door-open text-sky-400 mb-1 block text-sm"></i>
-              <strong>Booking Open Alert</strong>
-              <div class="text-[11px] text-slate-400 mt-0.5">Notify as soon as show opens</div>
-            </button>
+          <!-- REEL 04: Movie Selection -->
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <label class="reel-step-label">
+                <span class="reel-badge">4</span>
+                Reel 04: Feature Film Playing at this Cinema
+              </label>
+              <span id="movies-loader" class="hidden" style="font-size:11px;color:var(--velvet-bright);font-weight:600">
+                <i class="fa-solid fa-circle-notch fa-spin"></i> Checking cinema schedule…
+              </span>
+            </div>
+            <select id="movie-select" class="form-select" onchange="onMovieSelected()">
+              <option value="">— Select Cinema and Date first —</option>
+            </select>
+            <div id="unopened-notice" class="hidden" style="margin-top:10px;padding:12px 16px;background:rgba(212,175,55,0.1);border:1px solid rgba(212,175,55,0.3);border-radius:var(--radius-md);color:var(--gold-bright);font-size:12px;display:flex;align-items:center;gap:10px">
+              <i class="fa-solid fa-clock" style="font-size:16px;flex-shrink:0"></i>
+              <span>Bookings have not opened yet for this cinema on this date. SeatWatch will automatically scan BookMyShow 24/7 until shows go live!</span>
+            </div>
           </div>
 
-          <!-- Dynamic Rule Configuration Panels -->
-          <div id="rule-config-container" class="bg-slate-900/80 p-4 rounded-xl border border-slate-800 space-y-4">
+          <!-- REEL 05: Formats & Screens -->
+          <div id="format-selection-container">
+            <div class="flex items-center justify-between mb-2">
+              <label class="reel-step-label">
+                <span class="reel-badge">5</span>
+                Reel 05: Screen Experience (Dolby Cinema 3D, IMAX, 2D)
+              </label>
+              <span style="font-size:11px;color:var(--text-ash)">Select exact format &amp; language</span>
+            </div>
 
-            <!-- Panel: ZONES (Smart Multi-Zone & Range Engine) -->
-            <div id="rule-panel-ZONES" class="space-y-4">
-              <div class="flex items-center justify-between flex-wrap gap-2 pb-2 border-b border-slate-800/80">
-                <span class="text-xs text-slate-300 font-medium flex items-center gap-1.5">
-                  <i class="fa-solid fa-sliders text-rose-400"></i> Selection Matching Strategy:
-                </span>
-                <div class="flex items-center gap-4 text-xs text-slate-300">
-                  <label class="flex items-center gap-1.5 cursor-pointer">
-                    <input type="radio" name="zones-match-logic" value="ANY" checked onchange="updateZonesMatchLogic(this.value)">
-                    <span class="font-medium text-slate-200">Alert if ANY Selection Matches (OR)</span>
-                  </label>
-                  <label class="flex items-center gap-1.5 cursor-pointer">
-                    <input type="radio" name="zones-match-logic" value="ALL" onchange="updateZonesMatchLogic(this.value)">
-                    <span class="text-slate-400">Match ALL Selections (AND)</span>
-                  </label>
+            <div id="formats-cards-container">
+              <div style="font-size:12px;color:var(--text-ash);grid-column:1/-1;padding:22px;background:rgba(0,0,0,0.4);border:1px dashed rgba(255,255,255,0.1);border-radius:var(--radius-md);text-align:center">
+                Please select a Feature Film to view its available screens and experiences.
+              </div>
+            </div>
+
+            <input type="hidden" id="selected-event-code" value="">
+            <input type="hidden" id="selected-session-id" value="">
+            <input type="hidden" id="selected-format-name" value="">
+            <input type="hidden" id="selected-showtime-str" value="">
+            <input type="hidden" id="selected-screen-filter" value="ALL">
+          </div>
+
+          <!-- BMS Screen Layout Reference Action -->
+          <div id="bms-layout-action-section" style="border-top:1px solid rgba(255,255,255,0.08);padding-top:18px">
+            <div style="background:linear-gradient(135deg, #0e1017 0%, #0a0b10 100%);border:1px solid rgba(212,175,55,0.25);border-radius:var(--radius-md);padding:18px 22px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap">
+              <div class="flex items-center gap-3">
+                <div style="width:42px;height:42px;border-radius:10px;background:rgba(179,27,49,0.2);border:1px solid rgba(229,43,80,0.4);color:var(--velvet-bright);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">
+                  <i class="fa-solid fa-map-location-dot"></i>
+                </div>
+                <div>
+                  <h4 id="bms-layout-card-title" style="font-family:'Playfair Display',serif;font-size:14px;font-weight:700;color:#fff">Official BookMyShow Screen Layout</h4>
+                  <span id="bms-layout-screen-badge" style="font-size:11px;font-family:'Courier Prime',monospace;color:var(--gold-bright);font-weight:700"></span>
+                  <p id="bms-layout-card-desc" style="font-size:11px;color:var(--text-silver);max-width:500px;margin-top:3px">
+                    Open BookMyShow in a new tab to see the exact screen layout, rows, and seat numbers, then configure your target row ranges and seat conditions below.
+                  </p>
                 </div>
               </div>
+              <a id="look-at-layout-bms-btn" href="#" target="_blank" class="btn btn-velvet" style="flex-shrink:0">
+                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                <span>Look at Layout on BMS</span>
+              </a>
+            </div>
+          </div>
 
-              <!-- Zone Cards Container -->
-              <div id="zones-list-container" class="space-y-3">
-                <!-- Dynamically generated zone cards -->
-              </div>
+          <!-- REEL 06: Seat Radar Rule Engine -->
+          <div style="border-top:1px solid rgba(255,255,255,0.08);padding-top:20px">
+            <div class="flex items-center justify-between mb-2">
+              <label class="reel-step-label">
+                <span class="reel-badge">6</span>
+                Reel 06: Seat Radar Rules
+              </label>
+              <span style="font-size:11px;color:var(--text-ash)">Multi-row ranges, consecutive blocks, or exact seats</span>
+            </div>
 
-              <!-- Add Zone Button -->
-              <button type="button" onclick="addNewZone()" class="w-full py-2.5 px-4 rounded-xl border border-dashed border-slate-700 hover:border-rose-500/60 bg-slate-950/60 hover:bg-rose-500/5 text-xs text-rose-300 font-semibold flex items-center justify-center gap-2 transition">
-                <i class="fa-solid fa-plus text-xs"></i> Add Another Selection Zone (e.g. Alternative Row J for 2 seats)
+            <!-- Rule Type Selector Buttons -->
+            <div id="rule-type-container">
+              <button type="button" id="tab-btn-ZONES" class="rule-type-btn active" onclick="setRuleType('ZONES')">
+                <i class="fa-solid fa-table-cells-large" style="color:var(--velvet-bright);font-size:16px;display:block;margin-bottom:6px"></i>
+                <strong style="font-size:12px;color:#fff;display:block">Smart Zones &amp; Ranges</strong>
+                <span style="font-size:10px;color:var(--text-ash);display:block;margin-top:3px">e.g. Rows B-I, 12-25, 4 consecutive seats</span>
+              </button>
+              <button type="button" id="tab-btn-EXACT" class="rule-type-btn" onclick="setRuleType('EXACT')">
+                <i class="fa-solid fa-chair" style="color:var(--neon-emerald);font-size:16px;display:block;margin-bottom:6px"></i>
+                <strong style="font-size:12px;color:#fff;display:block">Exact Specific Seats</strong>
+                <span style="font-size:10px;color:var(--text-ash);display:block;margin-top:3px">e.g. G10, G11, G12</span>
+              </button>
+              <button type="button" id="tab-btn-BOOKING_OPEN" class="rule-type-btn" onclick="setRuleType('BOOKING_OPEN')">
+                <i class="fa-solid fa-door-open" style="color:var(--neon-cyan);font-size:16px;display:block;margin-bottom:6px"></i>
+                <strong style="font-size:12px;color:#fff;display:block">Booking Open Alert</strong>
+                <span style="font-size:10px;color:var(--text-ash);display:block;margin-top:3px">Notify as soon as bookings go live</span>
               </button>
             </div>
 
-            <!-- Panel: EXACT -->
-            <div id="rule-panel-EXACT" class="hidden space-y-3">
-              <label class="text-xs text-slate-400 block">Comma-separated seat codes</label>
-              <input type="text" id="exact-seats" placeholder="e.g. G10, G11, G12" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 font-mono">
-              <div class="flex items-center gap-4 text-xs text-slate-300">
-                <label class="flex items-center gap-1.5 cursor-pointer">
-                  <input type="radio" name="exact-mode" value="ALL" checked> All must be available
+            <!-- Dynamic Rule Config Container -->
+            <div id="rule-config-container" style="margin-top:14px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.08);border-radius:var(--radius-md);padding:18px">
+
+              <!-- Panel: ZONES -->
+              <div id="rule-panel-ZONES" class="space-y-4">
+                <div class="flex items-center justify-between flex-wrap gap-2 pb-2" style="border-bottom:1px solid rgba(255,255,255,0.08);font-size:11px">
+                  <span style="color:var(--text-silver);font-weight:600">
+                    <i class="fa-solid fa-sliders" style="color:var(--velvet-bright)"></i> Selection Matching Strategy:
+                  </span>
+                  <div class="flex items-center gap-4">
+                    <label class="flex items-center gap-2" style="cursor:pointer">
+                      <input type="radio" name="zones-match-logic" value="ANY" checked onchange="updateZonesMatchLogic(this.value)">
+                      <span>Alert if ANY Selection Matches (OR)</span>
+                    </label>
+                    <label class="flex items-center gap-2" style="cursor:pointer">
+                      <input type="radio" name="zones-match-logic" value="ALL" onchange="updateZonesMatchLogic(this.value)">
+                      <span>Match ALL Selections (AND)</span>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Zone Cards Injected via JS -->
+                <div id="zones-list-container" class="space-y-3"></div>
+
+                <div class="mt-3">
+                  <button type="button" onclick="addNewZone()" class="btn-dashed">
+                    <i class="fa-solid fa-plus"></i> Add Another Selection Zone (e.g. Alternative Row J for 2 seats)
+                  </button>
+                </div>
+              </div>
+
+              <!-- Panel: EXACT -->
+              <div id="rule-panel-EXACT" class="hidden space-y-3">
+                <label style="font-size:11px;color:var(--text-silver);display:block">Comma-separated specific seat numbers:</label>
+                <input type="text" id="exact-seats" placeholder="e.g. G10, G11, G12" class="form-input font-mono">
+                <div class="flex gap-4" style="font-size:11px">
+                  <label class="flex items-center gap-2" style="cursor:pointer">
+                    <input type="radio" name="exact-mode" value="ALL" checked> All must be available
+                  </label>
+                  <label class="flex items-center gap-2" style="cursor:pointer">
+                    <input type="radio" name="exact-mode" value="ANY"> At least one available
+                  </label>
+                </div>
+              </div>
+
+              <!-- Panel: BOOKING_OPEN -->
+              <div id="rule-panel-BOOKING_OPEN" class="hidden" style="font-size:12px;color:var(--text-silver);padding:8px 0">
+                <i class="fa-solid fa-circle-check" style="color:var(--neon-cyan);margin-right:8px"></i>
+                SeatWatch will alert you via Telegram the moment ticket sales go live for this show, regardless of seat position.
+              </div>
+
+            </div>
+          </div>
+
+          <!-- REEL 07: Interval & Telegram Dispatch -->
+          <div style="border-top:1px solid rgba(255,255,255,0.08);padding-top:20px">
+            <div class="grid-2 mb-4">
+              <div>
+                <label class="reel-step-label">
+                  <span class="reel-badge">7</span>
+                  Polling Frequency
                 </label>
-                <label class="flex items-center gap-1.5 cursor-pointer">
-                  <input type="radio" name="exact-mode" value="ANY"> At least one available
+                <select id="interval-select" class="form-select font-mono">
+                  <option value="2.0">Every 2 Minutes (Recommended)</option>
+                  <option value="3.0">Every 3 Minutes</option>
+                  <option value="5.0">Every 5 Minutes</option>
+                  <option value="1.0">Every 1 Minute (High-Demand Drops)</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="reel-step-label" style="justify-content:space-between">
+                  <span class="flex items-center gap-2">
+                    <i class="fa-brands fa-telegram" style="color:var(--neon-cyan)"></i>
+                    Notify Telegram Chat ID
+                  </span>
+                  <a href="https://t.me/userinfobot" target="_blank" style="font-size:10px;color:var(--neon-cyan);text-transform:none;letter-spacing:0;font-weight:400">Find My ID (@userinfobot)</a>
                 </label>
+                <input type="text" id="monitor-telegram-chat-id" placeholder="Optional: your personal Chat ID (e.g. 7052985296)" class="form-input font-mono">
               </div>
             </div>
 
-            <!-- Panel: BOOKING_OPEN -->
-            <div id="rule-panel-BOOKING_OPEN" class="hidden text-xs text-slate-400 py-1">
-              <i class="fa-solid fa-circle-check text-sky-400 mr-1.5"></i>
-              SeatWatch will alert you via Telegram as soon as ticket bookings open for this show, regardless of seat position.
+            <div class="flex justify-end pt-2">
+              <button type="button" onclick="createMonitorHandler()" class="btn btn-gold btn-lg">
+                <i class="fa-solid fa-bolt"></i>
+                <span>Activate Seat Watcher</span>
+              </button>
             </div>
-
           </div>
+
+        </div>
+      </section>
+
+      <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+      <!-- TAB 3: TELEGRAM DISPATCH CENTER                     -->
+      <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+      <section id="tab-settings" class="hidden max-w-2xl">
+        <div class="mb-6">
+          <h2 class="section-title" style="display:flex;align-items:center;gap:12px">
+            <i class="fa-brands fa-telegram" style="color:var(--neon-cyan)"></i>
+            <span>Telegram Alert Dispatch</span>
+          </h2>
+          <p class="section-subtitle">SeatWatch pushes instant notifications to your private Telegram the second your dream seats appear.</p>
         </div>
 
-        <!-- STEP 7: Check Interval, Telegram & Start Button -->
-        <div class="pt-4 border-t border-slate-800 space-y-4">
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
-            <div class="space-y-1">
-              <label class="text-xs text-slate-300 font-medium flex items-center gap-1.5">
-                <i class="fa-solid fa-clock text-rose-400"></i>
-                Background Polling Interval:
-              </label>
-              <select id="interval-select" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200">
-                <option value="2.0">Every 2 Minutes (Recommended)</option>
-                <option value="3.0">Every 3 Minutes</option>
-                <option value="5.0">Every 5 Minutes</option>
-                <option value="1.0">Every 1 Minute (High Demand)</option>
-              </select>
+        <!-- VIEW 1: CONNECTED STATE -->
+        <div id="tg-connected-view" class="hidden card card-padded mb-4" style="border-color:rgba(0,240,152,0.4);background:linear-gradient(145deg, #091310 0%, #060b09 100%)">
+          <div class="flex items-center justify-between gap-4" style="flex-wrap:wrap">
+            <div class="flex items-center gap-4">
+              <div style="width:50px;height:50px;border-radius:12px;background:rgba(0,240,152,0.15);border:1.5px solid rgba(0,240,152,0.4);display:flex;align-items:center;justify-content:center;color:var(--neon-emerald);font-size:24px;flex-shrink:0">
+                <i class="fa-solid fa-circle-check"></i>
+              </div>
+              <div>
+                <div class="flex items-center gap-2 mb-1">
+                  <span style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:#fff">Telegram Dispatch Active</span>
+                  <span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;background:rgba(0,240,152,0.15);border:1px solid rgba(0,240,152,0.4);color:var(--neon-emerald);font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase">
+                    <span style="width:6px;height:6px;border-radius:50%;background:var(--neon-emerald);box-shadow:0 0 8px var(--neon-emerald)"></span> Connected
+                  </span>
+                </div>
+                <p style="font-size:12px;color:var(--text-silver)">
+                  Linked User: <span id="tg-display-name" style="font-weight:700;color:var(--neon-emerald)">You</span>
+                  <span style="color:var(--text-ash);margin:0 6px">•</span>
+                  Chat ID: <code id="tg-display-chat-id" style="font-family:'Courier Prime',monospace;color:var(--gold-bright);background:rgba(0,0,0,0.5);padding:2px 6px;border-radius:4px">...</code>
+                </p>
+                <p style="font-size:11px;color:var(--neon-cyan);margin-top:3px">
+                  Official Bot: <a href="https://t.me/seatwatch_alert_bot" target="_blank" style="color:var(--neon-cyan);text-decoration:underline">@seatwatch_alert_bot</a>
+                </p>
+              </div>
             </div>
 
-            <div class="space-y-1">
-              <label class="text-xs text-slate-300 font-medium flex items-center justify-between">
-                <span class="flex items-center gap-1.5">
-                  <i class="fa-brands fa-telegram text-sky-400"></i>
-                  Notify Telegram Chat ID:
-                </span>
-                <a href="https://t.me/userinfobot" target="_blank" class="text-[10px] text-sky-400 hover:underline">Find My ID (@userinfobot)</a>
-              </label>
-              <input type="text" id="monitor-telegram-chat-id" placeholder="Optional: your personal Chat ID (e.g. 123456789)" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-sky-500 transition">
-            </div>
+            <button type="button" onclick="disconnectTelegram()" class="btn btn-velvet btn-sm">
+              <i class="fa-solid fa-link-slash"></i> Change Account
+            </button>
           </div>
 
-          <div class="flex items-center justify-end pt-2">
-            <button type="button" onclick="createMonitorHandler()" class="w-full sm:w-auto px-7 py-3 rounded-xl bg-gradient-to-r from-rose-600 via-rose-500 to-rose-600 hover:from-rose-500 hover:to-rose-400 text-white font-bold text-sm shadow-lg shadow-rose-600/30 transition flex items-center justify-center gap-2">
-              <i class="fa-solid fa-bolt"></i> Start Watching Seats
+          <div style="height:1px;background:repeating-linear-gradient(90deg, rgba(212,175,55,0.3) 0, rgba(212,175,55,0.3) 6px, transparent 6px, transparent 12px);margin:18px 0"></div>
+
+          <div class="flex items-center justify-between gap-3" style="flex-wrap:wrap">
+            <span style="font-size:12px;color:var(--text-silver)">Want to test the alert sound on your phone?</span>
+            <button type="button" onclick="testTelegramAlert()" class="btn btn-telegram">
+              <i class="fa-solid fa-paper-plane"></i> Send Test Alert
             </button>
           </div>
         </div>
 
-      </div>
-    </section>
+        <!-- VIEW 2: 1-CLICK PAIRING STATE -->
+        <div id="tg-unconnected-view" class="card card-padded mb-4" style="border-color:rgba(0,180,255,0.35);text-align:center">
+          <div style="margin-bottom:20px">
+            <span style="display:inline-block;padding:4px 14px;border-radius:20px;background:rgba(0,180,255,0.12);border:1px solid rgba(0,180,255,0.35);color:var(--neon-cyan);font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;font-family:'Montserrat',sans-serif">
+              Zero-Typing Setup
+            </span>
+            <h3 style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:#fff;margin-top:8px">Connect Your Telegram in 1 Click</h3>
+            <p style="font-size:12px;color:var(--text-silver);max-width:400px;margin:6px auto 0">
+              Click below to launch Telegram and tap <strong>START</strong>. SeatWatch will automatically pair your account with zero typing!
+            </p>
+          </div>
 
+          <!-- Big Pairing Button -->
+          <div class="flex flex-col items-center gap-4">
+            <a id="tg-1click-btn" href="https://t.me/seatwatch_alert_bot" target="_blank" class="btn btn-telegram btn-lg" style="width:100%;max-width:380px;font-size:14px;padding:16px 28px">
+              <i class="fa-brands fa-telegram" style="font-size:22px"></i>
+              <span>Connect via Telegram App</span>
+              <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:11px;opacity:0.8"></i>
+            </a>
 
-    <!-- ========================================== -->
-    <!-- TAB 3: TELEGRAM SETTINGS                  -->
-    <!-- ========================================== -->
-    <section id="tab-settings" class="hidden max-w-2xl mx-auto space-y-6">
-      <div>
-        <h2 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2.5">
-          <i class="fa-brands fa-telegram text-sky-400"></i>
-          Telegram Notification Setup
-        </h2>
-        <p class="text-sm text-slate-400 mt-1">
-          SeatWatch pushes instant alerts to your private Telegram the second your dream seats become available.
-        </p>
-      </div>
-
-      <!-- VIEW 1: CONNECTED STATE -->
-      <div id="tg-connected-view" class="hidden bg-slate-950/70 border border-emerald-500/30 rounded-2xl p-6 sm:p-8 space-y-6 shadow-2xl relative overflow-hidden">
-        <div class="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
-
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div class="flex items-center gap-4">
-            <div class="w-14 h-14 rounded-2xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center text-emerald-400 text-3xl shadow-inner shrink-0">
-              <i class="fa-solid fa-circle-check"></i>
+            <div style="display:inline-flex;align-items:center;gap:8px;padding:8px 16px;background:rgba(0,0,0,0.5);border:1px solid rgba(0,180,255,0.25);border-radius:20px;font-size:11px;color:var(--text-silver)">
+              <span style="width:7px;height:7px;border-radius:50%;background:var(--neon-cyan);box-shadow:0 0 8px var(--neon-cyan);animation:pulse-dot 1.5s infinite"></span>
+              <span>Waiting for you to tap <strong style="color:#fff">START</strong> in Telegram…</span>
             </div>
-            <div>
-              <div class="flex items-center gap-2">
-                <span class="text-lg font-bold text-white">Telegram Alerts Active</span>
-                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
-                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Connected
+
+            <!-- Desktop QR Code -->
+            <div style="margin-top:10px">
+              <p style="font-size:11px;color:var(--text-ash);margin-bottom:8px">On a computer? Scan with your phone camera:</p>
+              <div style="background:#fff;padding:8px;border-radius:10px;display:inline-block;box-shadow:0 8px 24px rgba(0,0,0,0.6)">
+                <img id="tg-qr-img" src="" alt="Scan to connect Telegram" width="128" height="128" style="display:block">
+              </div>
+            </div>
+          </div>
+
+          <!-- Manual Entry Accordion -->
+          <div style="border-top:1px solid rgba(255,255,255,0.08);margin-top:24px;padding-top:14px;text-align:left">
+            <details>
+              <summary style="cursor:pointer;font-size:12px;color:var(--text-silver);display:flex;align-items:center;justify-content:space-between">
+                <span class="flex items-center gap-2">
+                  <i class="fa-solid fa-keyboard" style="color:var(--text-ash)"></i>
+                  Or enter Chat ID manually (if not using 1-Click)
+                </span>
+                <i class="fa-solid fa-chevron-down" style="font-size:10px;color:var(--text-ash)"></i>
+              </summary>
+              <div style="margin-top:10px;padding:12px;background:rgba(0,0,0,0.4);border-radius:8px">
+                <div class="flex gap-2" style="flex-wrap:wrap">
+                  <input type="text" id="tg-chat-input" placeholder="e.g. 7052985296 (from @userinfobot)" class="form-input font-mono" style="flex:1;min-width:200px">
+                  <button type="button" onclick="saveSettings()" class="btn btn-telegram">Save Chat ID</button>
+                </div>
+                <span style="font-size:11px;color:var(--text-ash);display:block;margin-top:8px">
+                  Get your ID by messaging <a href="https://t.me/userinfobot" target="_blank" style="color:var(--neon-cyan);text-decoration:underline">@userinfobot</a> on Telegram.
                 </span>
               </div>
-              <p class="text-xs text-slate-300 mt-1">
-                Linked to: <span id="tg-display-name" class="font-bold text-emerald-300">You</span>
-                <span class="text-slate-500 mx-1">•</span>
-                Chat ID: <code id="tg-display-chat-id" class="font-mono text-slate-200 bg-slate-900 px-1.5 py-0.5 rounded text-[11px]">...</code>
-              </p>
-              <p class="text-[11px] text-slate-400 mt-0.5">
-                Bot: <a href="https://t.me/seatwatch_alert_bot" target="_blank" class="text-sky-400 hover:underline">@seatwatch_alert_bot</a>
-              </p>
-            </div>
+            </details>
           </div>
-
-          <button type="button" onclick="disconnectTelegram()" class="self-start sm:self-center px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-rose-950/40 text-slate-400 hover:text-rose-300 border border-slate-800 hover:border-rose-500/30 text-xs font-medium transition flex items-center gap-1.5">
-            <i class="fa-solid fa-link-slash"></i> Change Account
-          </button>
         </div>
 
-        <div class="pt-4 border-t border-slate-800/80 flex items-center justify-between gap-3">
-          <span class="text-xs text-slate-400">Want to verify alerts on your phone?</span>
-          <button type="button" onclick="testTelegramAlert()" class="px-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-semibold text-xs shadow-lg shadow-sky-600/30 transition flex items-center gap-2">
-            <i class="fa-solid fa-paper-plane"></i> Send Test Alert
-          </button>
-        </div>
-      </div>
-
-      <!-- VIEW 2: 1-CLICK PAIRING STATE -->
-      <div id="tg-unconnected-view" class="bg-slate-950/70 border border-sky-500/30 rounded-2xl p-6 sm:p-8 space-y-6 shadow-2xl">
-        <div class="text-center space-y-1">
-          <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-sky-500/10 text-sky-400 border border-sky-500/20 uppercase tracking-wider">
-            Zero-Typing Setup
-          </span>
-          <h3 class="text-xl font-bold text-white pt-2">Connect Your Telegram in 1 Click</h3>
-          <p class="text-xs text-slate-400 max-w-md mx-auto">
-            Click below to open Telegram and tap <strong>START</strong>. SeatWatch will automatically link your account instantly!
+        <!-- Cinema Pro-Tip Card -->
+        <div class="card card-padded mb-4" style="border-color:rgba(212,175,55,0.3);background:linear-gradient(135deg, rgba(212,175,55,0.08) 0%, rgba(10,12,18,0.9) 100%)">
+          <div class="flex items-center gap-2 mb-2" style="color:var(--gold-bright);font-weight:700;font-size:13px">
+            <i class="fa-solid fa-volume-high" style="font-size:16px"></i>
+            <span>Pro-Tip: Never Miss Fast-Selling Ticket Drops!</span>
+          </div>
+          <p style="font-size:12px;color:var(--text-silver);line-height:1.6">
+            Blockbuster movie seats often sell out in under 2 minutes. Set an urgent custom siren so you hear alerts even while sleeping:
           </p>
+          <ul style="list-style:none;padding-left:0;margin-top:10px;font-size:12px;color:var(--text-silver);display:flex;flex-direction:column;gap:6px">
+            <li class="flex items-start gap-2">
+              <i class="fa-solid fa-play" style="color:var(--gold-metallic);font-size:10px;margin-top:4px"></i>
+              <span>Send a test alert using the button above.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="fa-solid fa-play" style="color:var(--gold-metallic);font-size:10px;margin-top:4px"></i>
+              <span>In Telegram, open the chat with <strong style="color:#fff">@seatwatch_alert_bot</strong>.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="fa-solid fa-play" style="color:var(--gold-metallic);font-size:10px;margin-top:4px"></i>
+              <span>Tap the bot header at the top → <strong style="color:#fff">Notifications</strong> → <strong style="color:#fff">Customize</strong>.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <i class="fa-solid fa-play" style="color:var(--gold-metallic);font-size:10px;margin-top:4px"></i>
+              <span>Select a <strong style="color:var(--gold-bright)">loud, distinctive ringtone</strong> and turn on <strong style="color:var(--gold-bright)">High / Urgent Priority</strong>!</span>
+            </li>
+          </ul>
         </div>
 
-        <!-- 1-Click Action Button -->
-        <div class="flex flex-col items-center justify-center space-y-4 pt-2">
-          <a id="tg-1click-btn" href="https://t.me/seatwatch_alert_bot" target="_blank" class="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-sky-600 via-sky-500 to-sky-600 hover:from-sky-500 hover:to-sky-400 text-white font-bold text-base shadow-xl shadow-sky-600/30 transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-3">
-            <i class="fa-brands fa-telegram text-2xl"></i>
-            <span>Connect via Telegram App</span>
-            <i class="fa-solid fa-arrow-up-right-from-square text-xs opacity-80"></i>
-          </a>
-
-          <!-- Animated Waiting Pulse -->
-          <div class="flex items-center gap-2 text-xs text-slate-400 bg-slate-900/80 border border-slate-800 rounded-full px-4 py-1.5">
-            <span class="w-2 h-2 rounded-full bg-sky-400 animate-ping"></span>
-            <span>Waiting for you to tap <strong>START</strong> in Telegram...</span>
-          </div>
-
-          <!-- QR Code Option for Desktop Users -->
-          <div class="pt-4 border-t border-slate-800/80 w-full flex flex-col items-center text-center">
-            <span class="text-xs text-slate-400 mb-2">On computer? Scan with your phone camera:</span>
-            <div id="tg-qr-container" class="bg-white p-2.5 rounded-xl shadow-md border border-slate-700">
-              <img id="tg-qr-img" src="" alt="Scan to connect Telegram" class="w-32 h-32 block">
-            </div>
-          </div>
-        </div>
-
-        <!-- Manual Entry Toggle -->
-        <div class="pt-4 border-t border-slate-800/80">
-          <details class="group text-xs text-slate-400">
-            <summary class="cursor-pointer hover:text-slate-200 transition font-medium flex items-center justify-between list-none">
-              <span class="flex items-center gap-1.5">
-                <i class="fa-solid fa-keyboard text-slate-500 group-open:text-sky-400 transition"></i>
-                Or enter Chat ID manually (if not using 1-Click)
+        <!-- Advanced: Custom Bot Token -->
+        <div class="card card-padded">
+          <details>
+            <summary style="cursor:pointer;font-size:12px;color:var(--text-silver);display:flex;align-items:center;justify-content:space-between">
+              <span class="flex items-center gap-2">
+                <i class="fa-solid fa-gear" style="color:var(--text-ash)"></i>
+                Advanced: Use Custom Bot Token (Optional for Self-Hosters)
               </span>
-              <i class="fa-solid fa-chevron-down text-[10px] text-slate-500 group-open:rotate-180 transition"></i>
+              <i class="fa-solid fa-chevron-down" style="font-size:10px;color:var(--text-ash)"></i>
             </summary>
-            <div class="mt-3 pt-3 border-t border-slate-900 space-y-3">
-              <div class="flex flex-col sm:flex-row gap-2">
-                <input type="text" id="tg-chat-input" placeholder="e.g. 7052985296 (from @userinfobot)" class="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 font-mono focus:outline-none focus:border-sky-500">
-                <button type="button" onclick="saveSettings()" class="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-semibold text-xs whitespace-nowrap">
-                  Save Chat ID
-                </button>
-              </div>
-              <span class="text-[11px] text-slate-500 block">
-                Get your ID by messaging <a href="https://t.me/userinfobot" target="_blank" class="text-sky-400 underline">@userinfobot</a> on Telegram.
-              </span>
+            <div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.08)">
+              <p style="font-size:11px;color:var(--text-ash);margin-bottom:10px">
+                SeatWatch uses our built-in zero-config bot by default. If you prefer to host your own dedicated bot via
+                <a href="https://t.me/BotFather" target="_blank" style="color:var(--neon-cyan);text-decoration:underline">@BotFather</a>, enter its token below:
+              </p>
+              <input type="text" id="tg-token-input" placeholder="Optional: your BotFather token (e.g. 7123456789:AAH...)" class="form-input font-mono">
             </div>
           </details>
         </div>
-      </div>
 
-      <!-- Pro-Tip Card: Custom Sound / Urgent Ringtone -->
-      <div class="bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border border-amber-500/30 rounded-2xl p-5 space-y-2.5">
-        <div class="flex items-center gap-2 text-amber-300 font-bold text-sm">
-          <i class="fa-solid fa-volume-high text-amber-400 text-base"></i>
-          Pro-Tip: Never Miss Fast-Selling Ticket Drops!
-        </div>
-        <p class="text-xs text-slate-300 leading-relaxed">
-          Blockbuster movie seats sell out in under 2 minutes. Set an urgent custom siren so you hear alerts even while sleeping:
-        </p>
-        <ul class="text-xs text-slate-400 space-y-1.5 list-disc list-inside pl-1">
-          <li>Send a test alert using the button above.</li>
-          <li>In Telegram, open the chat with <strong class="text-slate-200">@seatwatch_alert_bot</strong>.</li>
-          <li>Tap the bot header at the top ➔ <strong class="text-slate-200">Notifications</strong> ➔ <strong class="text-slate-200">Customize</strong>.</li>
-          <li>Select a <strong class="text-amber-300">loud, distinctive ringtone</strong> and turn on <strong class="text-amber-300">High / Urgent Priority</strong>!</li>
-        </ul>
-      </div>
+      </section>
 
-      <!-- Advanced Toggle: Custom Bot Token -->
-      <div class="bg-slate-950/40 border border-slate-900 rounded-xl p-4">
-        <details class="group text-xs text-slate-400">
-          <summary class="cursor-pointer hover:text-slate-200 transition font-medium flex items-center justify-between list-none">
-            <span class="flex items-center gap-1.5">
-              <i class="fa-solid fa-gear text-slate-500 group-open:text-sky-400 transition"></i>
-              Advanced: Use Custom Bot Token (Optional for Self-Hosters)
-            </span>
-            <i class="fa-solid fa-chevron-down text-[10px] text-slate-500 group-open:rotate-180 transition"></i>
-          </summary>
-          <div class="mt-3 pt-3 border-t border-slate-900 space-y-2">
-            <p class="text-[11px] text-slate-400">
-              SeatWatch uses our built-in bot by default. If you prefer to host your own dedicated bot via <a href="https://t.me/BotFather" target="_blank" class="text-sky-400 underline">@BotFather</a>, enter its token below:
-            </p>
-            <input type="text" id="tg-token-input" placeholder="Optional: your BotFather token (e.g. 7123456789:AAH...)" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-sky-500 transition font-mono">
-          </div>
-        </details>
-      </div>
-
-    </section>
-
+    </div><!-- /container -->
   </main>
 
-  <!-- Logs Modal -->
-  <div id="logs-modal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full p-6 space-y-4 shadow-2xl">
-      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-        <h3 class="text-lg font-bold text-white flex items-center gap-2">
-          <i class="fa-solid fa-clock-rotate-left text-rose-400"></i> Check History Logs
-        </h3>
-        <button onclick="closeLogsModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
-      </div>
-      <div id="logs-content" class="max-h-96 overflow-y-auto space-y-2 text-xs font-mono">
-        <!-- Log entries -->
-      </div>
-      <div class="pt-2 text-right">
-        <button onclick="closeLogsModal()" class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs">Close</button>
+  <!-- 35mm Retro Filmstrip Bottom Border -->
+  <div class="filmstrip-border-bottom">
+    <div class="filmstrip-sprockets"></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- DIRECTOR'S CLAPPERBOARD CONFIRMATION MODAL              -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div id="cinema-confirm-modal" class="hidden cinema-modal-backdrop">
+    <div class="clapperboard-modal">
+      <!-- Clapperboard Chevron Top -->
+      <div class="clapperboard-top"></div>
+
+      <div class="clapperboard-body">
+        <div class="flex items-start gap-4">
+          <div id="confirm-modal-icon-container" style="width:48px;height:48px;border-radius:10px;background:rgba(179,27,49,0.2);border:1.5px solid rgba(229,43,80,0.5);display:flex;align-items:center;justify-content:center;color:var(--velvet-bright);font-size:22px;flex-shrink:0">
+            <i id="confirm-modal-icon" class="fa-solid fa-clapperboard"></i>
+          </div>
+          <div>
+            <span style="font-family:'Courier Prime',monospace;font-size:10px;color:var(--gold-metallic);letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:2px">DIRECTOR'S TAKE • CONFIRMATION</span>
+            <h3 id="confirm-modal-title" class="clapperboard-title">Confirm Action</h3>
+            <p id="confirm-modal-desc" class="clapperboard-desc">Are you sure you want to proceed?</p>
+          </div>
+        </div>
+
+        <div style="height:1px;background:repeating-linear-gradient(90deg, rgba(212,175,55,0.3) 0, rgba(212,175,55,0.3) 6px, transparent 6px, transparent 12px);margin:20px 0"></div>
+
+        <div class="flex justify-end gap-3">
+          <button id="confirm-modal-cancel-btn" type="button" class="btn btn-secondary">
+            Cancel
+          </button>
+          <button id="confirm-modal-action-btn" type="button" class="btn btn-velvet">
+            <span>Confirm</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>
 
-  <script src="/static/app.js"></script>
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- CINEMA RADAR SCOPE ACTIVATION MODAL                     -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div id="cinema-activation-modal" class="hidden cinema-modal-backdrop">
+    <div id="activation-modal-box" class="radar-modal">
 
-  <!-- ============================================================ -->
-  <!-- CINEMATIC CUSTOM CONFIRMATION MODAL                          -->
-  <!-- ============================================================ -->
-  <div id="cinema-confirm-modal" class="hidden fixed inset-0 z-50 cinema-modal-backdrop flex items-center justify-center p-4">
-    <div class="cinema-card border border-rose-500/30 rounded-3xl max-w-md w-full p-6 sm:p-7 space-y-5 shadow-2xl relative overflow-hidden">
-      <div class="absolute -top-12 -right-12 w-32 h-32 bg-rose-500/10 rounded-full blur-2xl pointer-events-none"></div>
-      
-      <div class="flex items-start gap-4">
-        <div id="confirm-modal-icon-container" class="w-12 h-12 rounded-2xl bg-rose-500/20 border border-rose-400/30 flex items-center justify-center text-rose-400 text-2xl shrink-0 shadow-inner">
-          <i id="confirm-modal-icon" class="fa-solid fa-clapperboard"></i>
-        </div>
-        <div class="space-y-1">
-          <h3 id="confirm-modal-title" class="text-lg font-bold text-white tracking-tight">Confirm Action</h3>
-          <p id="confirm-modal-desc" class="text-xs text-slate-300 leading-relaxed">Are you sure you want to proceed?</p>
-        </div>
-      </div>
-
-      <div class="perforated-line my-1"></div>
-
-      <div class="flex items-center justify-end gap-3 pt-1">
-        <button id="confirm-modal-cancel-btn" type="button" class="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-semibold border border-slate-800 transition">
-          Cancel
-        </button>
-        <button id="confirm-modal-action-btn" type="button" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-500 hover:to-rose-400 text-white font-bold text-xs shadow-lg shadow-rose-600/30 transition flex items-center gap-2">
-          <span>Confirm</span>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ============================================================ -->
-  <!-- CINEMATIC SEAT MONITOR ACTIVATION MODAL (RADAR ANIMATION)    -->
-  <!-- ============================================================ -->
-  <div id="cinema-activation-modal" class="hidden fixed inset-0 z-50 cinema-modal-backdrop flex items-center justify-center p-4">
-    <div id="activation-modal-box" class="cinema-card border border-rose-500/40 rounded-3xl max-w-lg w-full p-6 sm:p-8 space-y-6 shadow-2xl relative overflow-hidden text-center">
-      <!-- Glow effect -->
-      <div class="absolute -top-24 left-1/2 -translate-x-1/2 w-64 h-64 bg-rose-500/20 rounded-full blur-3xl pointer-events-none"></div>
-
-      <!-- Animated Radar Screen -->
-      <div class="relative w-36 h-36 mx-auto rounded-full border border-cyan-500/40 bg-slate-950/80 shadow-2xl flex items-center justify-center overflow-hidden">
-        <!-- Concentric circles -->
-        <div class="absolute w-24 h-24 rounded-full border border-cyan-500/20"></div>
-        <div class="absolute w-12 h-12 rounded-full border border-cyan-500/30"></div>
-        <!-- Crosshairs -->
-        <div class="absolute w-full h-[1px] bg-cyan-500/20"></div>
-        <div class="absolute h-full w-[1px] bg-cyan-500/20"></div>
-        <!-- Radar beam -->
+      <!-- Circular Radar Screen with Sweeping Beam -->
+      <div class="radar-scope">
+        <div class="radar-rings"></div>
+        <div class="radar-crosshair-h"></div>
+        <div class="radar-crosshair-v"></div>
         <div class="radar-sweep-beam"></div>
-        <!-- Blip / Target Lock -->
-        <div class="relative z-10 w-9 h-9 rounded-full bg-rose-500/30 border border-rose-400 flex items-center justify-center text-rose-400 text-sm shadow-lg shadow-rose-500/50 animate-pulse">
+        <div class="radar-blip">
           <i class="fa-solid fa-crosshairs"></i>
         </div>
       </div>
 
       <!-- Status Header -->
-      <div class="space-y-1">
-        <span class="px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-widest bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 inline-flex items-center gap-1.5">
-          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span> Radar Lock Acquired
+      <div class="space-y-2 mb-4">
+        <span style="display:inline-flex;align-items:center;gap:6px;padding:4px 14px;border-radius:20px;background:rgba(0,240,152,0.12);border:1px solid rgba(0,240,152,0.4);color:var(--neon-emerald);font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;font-family:'Montserrat',sans-serif">
+          <span style="width:6px;height:6px;border-radius:50%;background:var(--neon-emerald);box-shadow:0 0 8px var(--neon-emerald)"></span> Target Lock Acquired
         </span>
-        <h3 class="text-2xl font-bold font-cinema text-white tracking-wide">Watcher Activated</h3>
-        <p class="text-xs text-slate-300">Continuous 24/7 BookMyShow surveillance is now operational.</p>
+        <h3 class="font-cinema" style="font-size:24px;color:var(--gold-bright);letter-spacing:0.1em;text-shadow:0 0 25px rgba(212,175,55,0.5)">Watcher Activated</h3>
+        <p style="font-size:12px;color:var(--text-silver)">Continuous 24/7 BookMyShow surveillance is now operational.</p>
       </div>
 
-      <!-- Golden VIP Ticket Stub Details -->
-      <div class="relative bg-gradient-to-br from-slate-900/90 to-slate-950/95 border border-amber-500/30 rounded-2xl p-4 text-left space-y-3 shadow-inner">
-        <!-- Stamp badge -->
-        <div class="absolute top-3 right-3 px-3 py-1 rounded-md border-2 border-emerald-400/80 bg-emerald-950/60 text-emerald-300 font-cinema font-black text-xs uppercase tracking-widest shadow-lg ticket-stamp-badge">
-          MONITORED
+      <!-- Golden Physical Ticket Pass -->
+      <div style="background:rgba(0,0,0,0.6);border:1px solid var(--gold-metallic);border-left:4px solid var(--velvet-bright);border-radius:var(--radius-md);padding:18px;text-align:left;position:relative;margin-bottom:20px;box-shadow:inset 0 0 20px rgba(0,0,0,0.8)">
+        <!-- Stamped Seal -->
+        <div class="ticket-stamp-badge" style="position:absolute;top:14px;right:14px">MONITORED</div>
+
+        <div style="margin-bottom:12px">
+          <span style="font-size:9px;font-family:'Courier Prime',monospace;color:var(--gold-metallic);font-weight:700;letter-spacing:1.5px;text-transform:uppercase">Feature Film</span>
+          <h4 id="act-modal-movie" style="font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:#fff;padding-right:90px;line-height:1.3;margin-top:2px">Movie Title</h4>
+          <p id="act-modal-venue" style="font-size:11px;color:var(--text-silver);margin-top:3px">
+            <i class="fa-solid fa-location-dot" style="color:var(--velvet-bright);margin-right:4px"></i>Venue Name
+          </p>
         </div>
 
-        <div>
-          <span class="text-[10px] uppercase font-mono text-amber-400 font-semibold tracking-wider">Movie Feature</span>
-          <h4 id="act-modal-movie" class="text-base font-bold text-white truncate pr-24">Movie Title</h4>
-          <p id="act-modal-venue" class="text-xs text-slate-400"><i class="fa-solid fa-location-dot text-rose-400 mr-1"></i> Venue Name</p>
-        </div>
+        <div style="height:1px;background:repeating-linear-gradient(90deg, rgba(212,175,55,0.3) 0, rgba(212,175,55,0.3) 6px, transparent 6px, transparent 12px);margin:12px 0"></div>
 
-        <div class="perforated-line"></div>
-
-        <div class="grid grid-cols-2 gap-2 text-xs">
+        <div class="grid-2 mb-3">
           <div>
-            <span class="text-[10px] text-slate-400 uppercase font-mono block">Target Show & Date</span>
-            <span id="act-modal-date" class="text-slate-200 font-semibold font-mono">08/11/2026</span>
+            <span style="font-size:9px;font-family:'Courier Prime',monospace;color:var(--text-ash);display:block;text-transform:uppercase">Target Date</span>
+            <span id="act-modal-date" style="font-size:12px;font-family:'Courier Prime',monospace;color:#fff;font-weight:700">08/11/2026</span>
           </div>
           <div>
-            <span class="text-[10px] text-slate-400 uppercase font-mono block">Format / Screen</span>
-            <span id="act-modal-format" class="text-amber-300 font-semibold font-mono">Dolby Cinema 3D</span>
+            <span style="font-size:9px;font-family:'Courier Prime',monospace;color:var(--text-ash);display:block;text-transform:uppercase">Format / Screen</span>
+            <span id="act-modal-format" style="font-size:12px;font-family:'Courier Prime',monospace;color:var(--gold-bright);font-weight:700">Dolby Cinema 3D</span>
           </div>
         </div>
 
-        <div class="bg-slate-950/80 rounded-xl p-2.5 border border-slate-800 text-xs flex items-center justify-between">
+        <div style="background:rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.08);border-radius:6px;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px">
           <div class="flex items-center gap-2">
-            <i class="fa-solid fa-bullseye text-rose-400"></i>
-            <span id="act-modal-rule" class="text-slate-200 font-medium truncate max-w-[200px]">Rows B–I, Seats 12–25</span>
+            <i class="fa-solid fa-bullseye" style="color:var(--velvet-bright)"></i>
+            <span id="act-modal-rule" style="font-size:11px;color:#fff;font-family:'Courier Prime',monospace">Rows B–I, Seats 12–25</span>
           </div>
-          <span class="text-[10px] font-mono text-slate-400 bg-slate-900 px-2 py-0.5 rounded border border-slate-800">Every 2 mins</span>
+          <code style="font-size:10px;color:var(--gold-bright)">Every 2 mins</code>
         </div>
 
-        <div class="flex items-center justify-between text-[11px] text-slate-400 pt-1">
-          <span class="flex items-center gap-1.5 text-sky-400">
+        <div class="flex items-center justify-between mt-3" style="font-size:11px">
+          <span class="flex items-center gap-2" style="color:var(--neon-cyan)">
             <i class="fa-brands fa-telegram"></i> Telegram Dispatch: Active
           </span>
-          <span class="text-[10px] font-mono text-slate-400">Watcher ID: #<span id="act-modal-id">...</span></span>
+          <span style="color:var(--text-ash);font-family:'Courier Prime',monospace">Ticket ID: #<span id="act-modal-id">...</span></span>
         </div>
       </div>
 
       <!-- Action Button -->
-      <div>
-        <button type="button" onclick="closeActivationModalAndGo()" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-rose-600 via-rose-500 to-amber-500 hover:from-rose-500 hover:to-amber-400 text-white font-bold text-sm shadow-xl shadow-rose-600/30 transition flex items-center justify-center gap-2">
-          <span>View Live in Radar Board</span>
-          <i class="fa-solid fa-arrow-right text-xs"></i>
+      <button type="button" onclick="closeActivationModalAndGo()" class="btn btn-gold btn-lg w-full">
+        <span>View Live in Radar Board</span>
+        <i class="fa-solid fa-arrow-right"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- PROJECTION BOOTH HISTORY LOGS MODAL                     -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div id="logs-modal" class="hidden cinema-modal-backdrop">
+    <div class="logs-modal-box">
+      <div class="flex items-center justify-between pb-3" style="border-bottom:1px solid rgba(212,175,55,0.25)">
+        <h3 style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:#fff;display:flex;align-items:center;gap:10px">
+          <i class="fa-solid fa-film" style="color:var(--gold-metallic)"></i>
+          <span>Projection Booth Check Logs</span>
+        </h3>
+        <button onclick="closeLogsModal()" class="btn btn-secondary btn-sm" style="width:30px;height:30px;padding:0">
+          <i class="fa-solid fa-xmark"></i>
         </button>
+      </div>
+
+      <div id="logs-content">
+        <!-- Log entries injected by JS -->
+      </div>
+
+      <div class="flex justify-end pt-3" style="border-top:1px solid rgba(255,255,255,0.08)">
+        <button onclick="closeLogsModal()" class="btn btn-secondary">Close Log Book</button>
       </div>
     </div>
   </div>
+
+  <!-- App Script -->
+  <script src="/static/app.js"></script>
 
 </body>
 </html>
