@@ -353,13 +353,13 @@
             </div>
           </div>
 
-          <!-- REEL 07: Interval & Telegram Dispatch -->
+          <!-- REEL 07: Polling Frequency & Automatic Telegram Dispatch -->
           <div style="border-top:1px solid rgba(255,255,255,0.08);padding-top:20px">
             <div class="grid-2 mb-4">
               <div>
                 <label class="reel-step-label">
                   <span class="reel-badge">7</span>
-                  Polling Frequency
+                  Reel 07: Polling Frequency
                 </label>
                 <select id="interval-select" class="form-select font-mono">
                   <option value="2.0">Every 2 Minutes (Recommended)</option>
@@ -369,17 +369,19 @@
                 </select>
               </div>
 
-              <div>
-                <label class="reel-step-label" style="justify-content:space-between">
-                  <span class="flex items-center gap-2">
-                    <i class="fa-brands fa-telegram" style="color:var(--neon-cyan)"></i>
-                    Notify Telegram Chat ID
-                  </span>
-                  <a href="https://t.me/userinfobot" target="_blank" style="font-size:10px;color:var(--neon-cyan);text-transform:none;letter-spacing:0;font-weight:400">Find My ID (@userinfobot)</a>
-                </label>
-                <input type="text" id="monitor-telegram-chat-id" placeholder="Optional: your personal Chat ID (e.g. 7052985296)" class="form-input font-mono">
+              <div style="background:rgba(0,0,0,0.5);border:1px solid rgba(0,180,255,0.3);border-radius:var(--radius-md);padding:14px 18px;display:flex;align-items:center;gap:14px">
+                <div style="width:40px;height:40px;border-radius:10px;background:rgba(0,180,255,0.15);border:1px solid rgba(0,180,255,0.35);display:flex;align-items:center;justify-content:center;color:var(--neon-cyan);font-size:20px;flex-shrink:0">
+                  <i class="fa-brands fa-telegram"></i>
+                </div>
+                <div>
+                  <span style="font-family:'Cinzel',serif;font-size:13px;font-weight:700;color:#fff;display:block">Telegram Dispatch Active</span>
+                  <span style="font-size:11px;color:var(--text-silver);display:block">Alerts are automatically pushed to your paired Telegram (configure in <a href="javascript:switchTab('settings')" style="color:var(--neon-cyan);text-decoration:underline">Telegram Bot</a> tab)</span>
+                </div>
               </div>
             </div>
+
+            <!-- Hidden input for backwards-compatibility -->
+            <input type="hidden" id="monitor-telegram-chat-id" value="">
 
             <div class="flex justify-end pt-2">
               <button type="button" onclick="createMonitorHandler()" class="btn btn-gold btn-lg">

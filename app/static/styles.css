@@ -1485,3 +1485,290 @@ main {
 ::-webkit-scrollbar-track { background: var(--cinema-black); }
 ::-webkit-scrollbar-thumb { background: #262030; border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--velvet-crimson); }
+
+
+/* ── SMART ZONE SELECTION CARD ───────────────────────────── */
+.zone-ticket-card {
+  background: linear-gradient(145deg, #0e1017 0%, #090a0f 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-md);
+  padding: 18px 22px;
+  position: relative;
+  transition: all 0.25s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.zone-ticket-card:hover {
+  border-color: rgba(212, 175, 55, 0.35);
+}
+
+.zone-ticket-card.active {
+  border: 1.5px solid var(--gold-metallic) !important;
+  background: linear-gradient(145deg, #131622 0%, #0c0e15 100%) !important;
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.2), inset 0 0 0 1px rgba(212, 175, 55, 0.2);
+}
+
+/* Zone Header */
+.zone-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.zone-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.zone-num-badge {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--text-silver);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Courier Prime', monospace;
+  font-size: 11px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.zone-num-badge.active {
+  background: linear-gradient(135deg, #40060f 0%, #b31b31 100%);
+  border-color: var(--gold-metallic);
+  color: #fff2b2;
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.35);
+}
+
+.zone-title-input {
+  background: rgba(0, 0, 0, 0.6) !important;
+  border: 1px solid rgba(212, 175, 55, 0.3) !important;
+  border-radius: var(--radius-sm);
+  color: #fff2b2 !important;
+  font-family: 'Cinzel', serif;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 6px 12px;
+  outline: none;
+  width: 260px;
+  max-width: 100%;
+  transition: all 0.2s ease;
+}
+
+.zone-title-input:focus {
+  border-color: var(--gold-metallic) !important;
+  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
+}
+
+.zone-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-zone-select {
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--text-silver);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-zone-select:hover {
+  background: rgba(212, 175, 55, 0.12);
+  border-color: rgba(212, 175, 55, 0.4);
+  color: var(--gold-bright);
+}
+
+.btn-zone-select.active {
+  background: linear-gradient(135deg, #aa771c 0%, #d4af37 100%);
+  border-color: #fff2b2;
+  color: #1a0e00;
+  box-shadow: 0 2px 10px rgba(212, 175, 55, 0.35);
+}
+
+.btn-zone-delete {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  background: rgba(179, 27, 49, 0.2);
+  border: 1px solid rgba(229, 43, 80, 0.4);
+  color: #ff7088;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 11px;
+}
+
+.btn-zone-delete:hover {
+  background: rgba(229, 43, 80, 0.4);
+  border-color: #ff5577;
+  color: #fff;
+}
+
+/* Quick Presets Row */
+.zone-presets-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 11px;
+}
+
+.preset-label {
+  font-family: 'Courier Prime', monospace;
+  font-size: 10px;
+  color: var(--text-ash);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.preset-chip {
+  padding: 5px 12px;
+  border-radius: var(--radius-pill);
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  font-family: 'Courier Prime', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.preset-chip.gold {
+  border-color: rgba(212, 175, 55, 0.35);
+  color: var(--gold-bright);
+}
+.preset-chip.gold:hover {
+  background: rgba(212, 175, 55, 0.15);
+  border-color: var(--gold-metallic);
+  color: #fff2b2;
+}
+
+.preset-chip.sky {
+  border-color: rgba(0, 180, 255, 0.35);
+  color: var(--neon-cyan);
+}
+.preset-chip.sky:hover {
+  background: rgba(0, 180, 255, 0.15);
+  border-color: var(--neon-cyan);
+  color: #fff;
+}
+
+.preset-chip.emerald {
+  border-color: rgba(0, 240, 152, 0.35);
+  color: var(--neon-emerald);
+}
+.preset-chip.emerald:hover {
+  background: rgba(0, 240, 152, 0.15);
+  border-color: var(--neon-emerald);
+  color: #fff;
+}
+
+/* Zone Coordinates 3-Column Grid */
+.zone-coords-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 700px) {
+  .zone-coords-grid { grid-template-columns: 1fr; }
+}
+
+.coord-box {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.coord-label {
+  font-family: 'Courier Prime', monospace;
+  font-size: 10px;
+  color: var(--text-ash);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.coord-inputs-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.coord-subtext {
+  font-size: 11px;
+  color: var(--text-silver);
+  font-family: 'Montserrat', sans-serif;
+}
+
+.coord-input {
+  background: #050608 !important;
+  border: 1px solid rgba(212, 175, 55, 0.35) !important;
+  border-radius: var(--radius-sm);
+  color: #ffffff !important;
+  font-family: 'Courier Prime', monospace;
+  font-weight: 700;
+  font-size: 13px;
+  text-align: center;
+  padding: 8px 10px;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.coord-input:focus {
+  border-color: var(--gold-metallic) !important;
+  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
+}
+
+.coord-input.row-input {
+  width: 48px;
+  text-transform: uppercase;
+}
+
+.coord-input.seat-input {
+  width: 58px;
+}
+
+/* Consecutive Toggle Checkbox */
+.consecutive-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 11px;
+  color: var(--text-silver);
+  font-family: 'Montserrat', sans-serif;
+}
+
+.consecutive-toggle input[type="checkbox"] {
+  accent-color: var(--gold-metallic);
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+}

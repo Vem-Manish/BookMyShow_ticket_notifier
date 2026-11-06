@@ -102,52 +102,65 @@ class MonitoringScheduler:
         # Step 1: Discover all matching shows for this date & format
         candidate_shows: List[Dict[str, Any]] = []
 
-        # 1. Cinema-centric lookup (shows ALL child formats, screens, and showtimes)
-        try:
-            c_data = self.bms.get_cinema_showtimes(
-                city_slug=city_slug,
-                venue_code=venue_code,
-                date_code=target_date,
-                include_predictions=False
-            )
-            if c_data.get("is_open") and not c_data.get("is_predicted"):
-                movie_target = monitor["movie_title"].strip().lower()
-                for m in c_data.get("movies", []):
-                    m_title = (m.get("title") or "").strip().lower()
-                    if movie_target in m_title or m_title in movie_target:
-                        for f in m.get("formats", []):
-                            f_name = (f.get("format_name") or "").lower()
-                            f_attr = (f.get("attributes") or "").lower()
-                            f_screen = (f.get("screen") or "").lower()
-                            f_event = (f.get("event_code") or "").lower()
+        single_lock = (monitor.get("session_id") or "").strip()
+        if single_lock and single_lock.lower() not in ["all", "", "none", "null"]:
+            # Direct fast path: we already have the exact session ID to check!
+            candidate_shows.append({
+                "session_id": single_lock,
+                "show_time": monitor.get("format_filter") or "Selected Show",
+                "screen": monitor.get("format_filter") or "",
+                "attributes": "",
+                "booking_url": monitor.get("booking_url") or f"https://in.bookmyshow.com/booktickets/{venue_code}/{single_lock}"
+            })
 
-                            matches = False
-                            if not format_filter or format_filter == "any format":
-                                matches = True
-                            elif format_filter in f_name or format_filter in f_attr:
-                                matches = True
-                            elif monitor.get("event_code") and monitor["event_code"].lower() == f_event:
-                                matches = True
-                            else:
-                                tokens = [t.strip() for t in format_filter.replace("•", " ").split() if len(t.strip()) > 1]
-                                target_haystack = f"{f_name} {f_attr} {f_screen}"
-                                if tokens and all(t in target_haystack for t in tokens):
+        # If not locked to a single session, discover live shows from cinema schedule
+        if not candidate_shows:
+            # 1. Cinema-centric lookup (shows ALL child formats, screens, and showtimes)
+            try:
+                c_data = self.bms.get_cinema_showtimes(
+                    city_slug=city_slug,
+                    venue_code=venue_code,
+                    date_code=target_date,
+                    include_predictions=False
+                )
+                if c_data.get("is_open") and not c_data.get("is_predicted"):
+                    movie_target = monitor["movie_title"].strip().lower()
+                    for m in c_data.get("movies", []):
+                        m_title = (m.get("title") or "").strip().lower()
+                        if movie_target in m_title or m_title in movie_target:
+                            for f in m.get("formats", []):
+                                f_name = (f.get("format_name") or "").lower()
+                                f_attr = (f.get("attributes") or "").lower()
+                                f_screen = (f.get("screen") or "").lower()
+                                f_event = (f.get("event_code") or "").lower()
+    
+                                matches = False
+                                if not format_filter or format_filter == "any format":
                                     matches = True
-
-                            if matches:
-                                format_detected = f.get("format_name", format_detected)
-                                for sh in f.get("shows", []):
-                                    sid = str(sh.get("session_id", "")).strip()
-                                    if sid and not any(c["session_id"] == sid for c in candidate_shows):
-                                        candidate_shows.append({
-                                            "session_id": sid,
-                                            "show_time": sh.get("show_time", "Show"),
-                                            "screen": sh.get("screen", ""),
-                                            "attributes": sh.get("attributes", ""),
-                                            "booking_url": sh.get("booking_url") or f"https://in.bookmyshow.com/booktickets/{venue_code}/{sid}"
-                                        })
-        except Exception as e:
-            logger.warning(f"Cinema showtimes check warning: {e}")
+                                elif format_filter in f_name or format_filter in f_attr:
+                                    matches = True
+                                elif monitor.get("event_code") and monitor["event_code"].lower() == f_event:
+                                    matches = True
+                                else:
+                                    tokens = [t.strip() for t in format_filter.replace("•", " ").split() if len(t.strip()) > 1]
+                                    target_haystack = f"{f_name} {f_attr} {f_screen}"
+                                    if tokens and all(t in target_haystack for t in tokens):
+                                        matches = True
+    
+                                if matches:
+                                    format_detected = f.get("format_name", format_detected)
+                                    for sh in f.get("shows", []):
+                                        sid = str(sh.get("session_id", "")).strip()
+                                        if sid and not any(c["session_id"] == sid for c in candidate_shows):
+                                            candidate_shows.append({
+                                                "session_id": sid,
+                                                "show_time": sh.get("show_time", "Show"),
+                                                "screen": sh.get("screen", ""),
+                                                "attributes": sh.get("attributes", ""),
+                                                "booking_url": sh.get("booking_url") or f"https://in.bookmyshow.com/booktickets/{venue_code}/{sid}"
+                                            })
+            except Exception as e:
+                logger.warning(f"Cinema showtimes check warning: {e}")
 
         # 2. Movie-centric lookup fallback
         if not candidate_shows:
@@ -234,7 +247,11 @@ class MonitoringScheduler:
                     region_slug=city_slug
                 )
             except Exception as e:
-                logger.warning(f"Failed to retrieve seat layout for show {sh_time} (Session {sh_id}): {e}")
+                err_msg = str(e)
+                logger.warning(f"Failed to retrieve seat layout for show {sh_time} (Session {sh_id}): {err_msg}")
+                show_summaries.append(f"{sh_time}: layout check pending")
+                if not last_explanation:
+                    last_explanation = "Layout check pending"
                 continue
 
             open_count = seat_data.get("available_count", 0)
@@ -309,7 +326,9 @@ class MonitoringScheduler:
                 }
 
         # None of the candidate shows satisfy the rule yet
-        summary_str = ", ".join(show_summaries)
+        summary_str = ", ".join(show_summaries) if show_summaries else "Live check"
+        if not last_explanation:
+            last_explanation = "None of the selections currently match"
         status_msg = f"Active check across {len(candidate_shows)} show(s) ({summary_str}): {last_explanation}"
         update_monitor_status(monitor_id, "ACTIVE", status_msg)
         add_log(monitor_id, "CHECKED", status_msg)

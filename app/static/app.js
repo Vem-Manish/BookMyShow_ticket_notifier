@@ -957,38 +957,29 @@ function renderZoneCards() {
   currentZones.forEach((z, idx) => {
     const isActive = idx === activeZoneIndex;
     const card = document.createElement("div");
-    card.className = `p-4 rounded-xl border transition space-y-3 ${
-      isActive
-        ? "border-rose-500/70 bg-rose-500/10 shadow-md shadow-rose-500/10"
-        : "border-slate-800 bg-slate-950/60 hover:border-slate-700"
-    }`;
+    card.className = `zone-ticket-card ${isActive ? "active" : ""}`;
 
     card.innerHTML = `
-      <div class="flex items-center justify-between flex-wrap gap-2 pb-2 border-b border-slate-800/60">
-        <div class="flex items-center gap-2">
-          <span class="w-5 h-5 rounded-full ${isActive ? 'bg-rose-500 text-white' : 'bg-slate-800 text-slate-400'} text-xs flex items-center justify-center font-bold font-mono">
-            ${idx + 1}
-          </span>
+      <!-- Zone Card Header -->
+      <div class="zone-header">
+        <div class="zone-header-left">
+          <span class="zone-num-badge ${isActive ? 'active' : ''}">${idx + 1}</span>
           <input type="text" value="${z.title}"
             onchange="updateZoneField(${idx}, 'title', this.value)"
-            class="bg-transparent border-0 font-semibold text-xs text-slate-200 focus:ring-0 focus:outline-none p-0 w-52 sm:w-64">
+            class="zone-title-input" placeholder="Zone name (e.g. Selection 1)">
         </div>
 
-        <div class="flex items-center gap-2">
+        <div class="zone-header-right">
           <button type="button" onclick="setActiveZone(${idx})"
-            class="px-2.5 py-1 rounded-lg text-[11px] font-medium transition flex items-center gap-1 ${
-              isActive
-                ? "bg-rose-500 text-white font-bold shadow-sm shadow-rose-500/30"
-                : "bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700"
-            }">
-            <i class="fa-solid fa-crosshairs text-[10px]"></i>
-            ${isActive ? "Active Selection" : "Select to Edit"}
+            class="btn-zone-select ${isActive ? 'active' : ''}">
+            <i class="fa-solid fa-crosshairs"></i>
+            <span>${isActive ? "Active Selection" : "Select to Edit"}</span>
           </button>
 
           ${
             currentZones.length > 1
-              ? `<button type="button" onclick="removeZone(${idx})" class="w-6 h-6 rounded-lg bg-rose-950/40 hover:bg-rose-900/60 text-rose-400 flex items-center justify-center transition text-xs" title="Delete this selection">
-                  <i class="fa-solid fa-trash-can text-[10px]"></i>
+              ? `<button type="button" onclick="removeZone(${idx})" class="btn-zone-delete" title="Delete this selection">
+                  <i class="fa-solid fa-trash-can"></i>
                 </button>`
               : ""
           }
@@ -996,67 +987,66 @@ function renderZoneCards() {
       </div>
 
       <!-- Quick Row & Seat Preset Chips -->
-      <div class="flex flex-wrap items-center gap-1.5 text-[11px]">
-        <span class="text-slate-400 text-[10px] mr-1">Quick Presets:</span>
-        <button type="button" onclick="applyZonePreset(${idx}, 'B', 'I', 12, 25, 4, true, 'Middle Rows B-I (12-25)')"
-          class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-rose-300 font-mono text-[10px] border border-slate-700/60 transition">
-          Middle Rows (B-I, 12-25)
+      <div class="zone-presets-row">
+        <span class="preset-label"><i class="fa-solid fa-wand-magic-sparkles"></i> Quick Presets:</span>
+        <button type="button" onclick="applyZonePreset(${idx}, 'B', 'I', 12, 25, 4, true, 'Middle Rows (B-I, 12-25)')"
+          class="preset-chip gold">
+          Middle Rows (B–I, 12–25)
         </button>
-        <button type="button" onclick="applyZonePreset(${idx}, 'J', 'J', 1, 20, 2, true, 'Row J Director (1-20)')"
-          class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 font-mono text-[10px] border border-slate-700/60 transition">
+        <button type="button" onclick="applyZonePreset(${idx}, 'J', 'J', 10, 22, 4, true, 'Row J Director Choice')"
+          class="preset-chip sky">
           Row J (Director Choice)
         </button>
         <button type="button" onclick="applyZonePreset(${idx}, 'C', 'G', 10, 26, 4, true, 'Prime Center Rows (C-G)')"
-          class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-amber-300 font-mono text-[10px] border border-slate-700/60 transition">
-          Prime Center (C-G)
+          class="preset-chip emerald">
+          Prime Center (C–G)
         </button>
       </div>
 
-      <!-- Zone Coordinates & Requirements -->
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+      <!-- Zone Coordinates Grid -->
+      <div class="zone-coords-grid">
         <!-- Target Rows Range -->
-        <div>
-          <label class="text-[11px] text-slate-400 block mb-1">Target Rows Range</label>
-          <div class="flex items-center gap-1.5">
-            <span class="text-xs text-slate-400">From</span>
+        <div class="coord-box">
+          <span class="coord-label">Target Rows Range</span>
+          <div class="coord-inputs-wrap">
+            <span class="coord-subtext">From</span>
             <input type="text" value="${z.row_start}" maxlength="2"
               onchange="updateZoneField(${idx}, 'row_start', this.value.toUpperCase())"
-              class="w-14 bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-center font-mono font-bold text-slate-200 uppercase">
-            <span class="text-xs text-slate-500">to</span>
+              class="coord-input row-input">
+            <span class="coord-subtext">to</span>
             <input type="text" value="${z.row_end}" maxlength="2"
               onchange="updateZoneField(${idx}, 'row_end', this.value.toUpperCase())"
-              class="w-14 bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-center font-mono font-bold text-slate-200 uppercase">
+              class="coord-input row-input">
           </div>
         </div>
 
         <!-- Seat Number Range -->
-        <div>
-          <label class="text-[11px] text-slate-400 block mb-1">Seat Number Range</label>
-          <div class="flex items-center gap-1.5">
-            <span class="text-xs text-slate-400">Seats</span>
+        <div class="coord-box">
+          <span class="coord-label">Seat Number Range</span>
+          <div class="coord-inputs-wrap">
+            <span class="coord-subtext">Seats</span>
             <input type="number" value="${z.seat_min}" min="1" max="999"
               onchange="updateZoneField(${idx}, 'seat_min', parseInt(this.value, 10))"
-              class="w-16 bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-center font-mono font-bold text-slate-200">
-            <span class="text-xs text-slate-500">to</span>
+              class="coord-input seat-input">
+            <span class="coord-subtext">to</span>
             <input type="number" value="${z.seat_max}" min="1" max="999"
               onchange="updateZoneField(${idx}, 'seat_max', parseInt(this.value, 10))"
-              class="w-16 bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-center font-mono font-bold text-slate-200">
+              class="coord-input seat-input">
           </div>
         </div>
 
-        <!-- Quantity & Consecutive Checkbox -->
-        <div>
-          <label class="text-[11px] text-slate-400 block mb-1">Seats Required</label>
-          <div class="flex items-center gap-3">
+        <!-- Seats Required & Consecutive -->
+        <div class="coord-box">
+          <span class="coord-label">Seats Required</span>
+          <div class="coord-inputs-wrap">
             <input type="number" value="${z.quantity}" min="1" max="10"
               onchange="updateZoneField(${idx}, 'quantity', parseInt(this.value, 10))"
-              class="w-16 bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-center font-mono font-bold text-slate-200">
+              class="coord-input seat-input" style="width:52px">
 
-            <label class="flex items-center gap-1.5 cursor-pointer select-none text-[11px] text-slate-300">
+            <label class="consecutive-toggle">
               <input type="checkbox" ${z.consecutive ? 'checked' : ''}
-                onchange="updateZoneField(${idx}, 'consecutive', this.checked)"
-                class="accent-rose-500 w-4 h-4 rounded">
-              <span class="font-medium text-rose-300">Consecutive adjacent seats</span>
+                onchange="updateZoneField(${idx}, 'consecutive', this.checked)">
+              <span>Consecutive seats</span>
             </label>
           </div>
         </div>
@@ -1450,14 +1440,30 @@ function createMonitorCard(m) {
 }
 
 async function triggerCheckNow(id) {
+  const card = document.getElementById(`monitor-card-${id}`);
+  const btn = event?.currentTarget || card?.querySelector("button[onclick^='triggerCheckNow']");
+  const originalHtml = btn ? btn.innerHTML : '';
+  if (btn) {
+    btn.innerHTML = `<i class="fa-solid fa-bolt fa-spin" style="color:var(--gold-pure)"></i>`;
+    btn.disabled = true;
+  }
+  const pingVal = card?.querySelector(".spec-cell.full-width:last-child .spec-val");
+  if (pingVal) {
+    pingVal.innerHTML = `<i class="fa-solid fa-satellite-dish fa-spin" style="color:var(--gold-bright);margin-right:4px"></i>Scanning BookMyShow radar now...`;
+  }
   showAlert(`Checking BookMyShow now for Monitor #${id}...`, "info");
   try {
     const res = await fetch(`/api/monitors/${id}/check_now`, { method: "POST" });
     const data = await res.json();
     showAlert(`Check completed: ${data.explanation || data.message || "Done"}`, data.status === "TRIGGERED" ? "success" : "info");
-    loadMonitors();
+    await loadMonitors();
   } catch (err) {
     showAlert("Check failed: " + err.message, "error");
+  } finally {
+    if (btn) {
+      btn.innerHTML = originalHtml;
+      btn.disabled = false;
+    }
   }
 }
 
