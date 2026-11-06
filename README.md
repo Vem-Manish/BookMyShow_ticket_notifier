@@ -123,32 +123,30 @@ Open your browser and navigate to **[http://localhost:8000](http://localhost:800
 
 ---
 
-## 🤖 Zero-Config Telegram Setup
+## 🤖 Zero-Typing 1-Click Telegram Setup
 
-You **do not** need to create your own bot via BotFather. SeatWatch comes connected to the official **[@seatwatch_alert_bot](https://t.me/seatwatch_alert_bot)**!
+You **do not** need to copy 10-digit IDs or fiddle with BotFather. SeatWatch features instant **1-Click Deep Link Pairing**:
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor User as You
-    participant Bot as @seatwatch_alert_bot
-    participant Info as @userinfobot
     participant UI as SeatWatch Dashboard
+    participant Bot as @seatwatch_alert_bot
 
-    User->>Bot: Open & tap "Start" (/start)
-    User->>Info: Send /start to get your numeric ID
-    Info-->>User: Returns "Id: 7052985296"
-    User->>UI: Paste Chat ID into Settings
-    User->>UI: Click "Send Test Alert"
-    UI->>Bot: Dispatch verified test notification
-    Bot-->>User: 🔔 Instant push alert received on phone!
+    User->>UI: Opens Telegram tab
+    UI-->>User: Shows "Connect via Telegram App" button (or QR code)
+    User->>Bot: Clicks button (or scans QR) & taps "START"
+    Bot->>UI: Automatically delivers Chat ID & Name via long-poll webhook
+    UI-->>User: 🎉 Dashboard turns green: "Connected as You!"
+    Bot-->>User: 🔔 Welcome alert sent directly to Telegram!
 ```
 
-### Quick 3-Step Setup:
-1. Open [**@seatwatch_alert_bot**](https://t.me/seatwatch_alert_bot) on Telegram and tap **Start** (or send `/start`). *(This gives Telegram permission to message you).*
-2. Message [**@userinfobot**](https://t.me/userinfobot) (or [@raw_data_bot](https://t.me/raw_data_bot)) to get your numeric **`Id`** (e.g. `7052985296`).
-3. In the SeatWatch dashboard, switch to the **Telegram Bot** tab, paste your Chat ID, and click **Save Settings**!
-4. Click **Send Test Alert** to verify connectivity.
+### 1-Click Pairing Steps:
+1. In the SeatWatch dashboard, switch to the **Telegram Bot** tab.
+2. Click **Connect via Telegram App** (or scan the on-screen QR code with your phone camera).
+3. Telegram opens directly to [**@seatwatch_alert_bot**](https://t.me/seatwatch_alert_bot) — simply tap **START** at the bottom!
+4. The dashboard automatically detects your connection in real-time, turns green, and you are ready to receive live alerts! *(Manual input is also preserved as a fallback).*
 
 ---
 

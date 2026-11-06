@@ -25,6 +25,7 @@ from app.database import (
 )
 from app.notifier import TelegramNotifier, DEFAULT_BOT_TOKEN
 from app.scheduler import scheduler_instance
+from app.telegram_service import telegram_pairing_service
 
 
 @asynccontextmanager
@@ -32,8 +33,10 @@ async def lifespan(app: FastAPI):
     # Startup
     init_db()
     scheduler_instance.start()
+    telegram_pairing_service.start_poller()
     yield
     # Shutdown
+    telegram_pairing_service.stop_poller()
     scheduler_instance.shutdown()
 
 
@@ -308,3 +311,25 @@ async def test_telegram(req: TelegramTestRequest):
     token = (req.token and req.token.strip()) or settings.get("telegram_bot_token") or DEFAULT_BOT_TOKEN
     res = await notifier.send_test_message(token, req.chat_id.strip())
     return res
+
+
+# -----------------------------------------------------------------------------
+# 1-Click Telegram Deep-Link Pairing APIs
+# -----------------------------------------------------------------------------
+@app.get("/api/telegram/pair_code")
+async def get_pair_code():
+    session = telegram_pairing_service.create_pairing_session()
+    return {"success": True, **session}
+
+
+@app.get("/api/telegram/pair_status")
+async def get_pair_status(code: str = Query(...)):
+    status = telegram_pairing_service.get_pairing_status(code)
+    return {"success": True, **status}
+
+
+@app.post("/api/telegram/disconnect")
+async def disconnect_telegram():
+    update_setting("telegram_chat_id", "")
+    update_setting("telegram_user_name", "")
+    return {"success": True, "message": "Telegram disconnected"}

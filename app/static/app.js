@@ -1282,6 +1282,9 @@ function closeLogsModal() {
   document.getElementById("logs-modal").classList.add("hidden");
 }
 
+let currentPairCode = null;
+let pairPollInterval = null;
+
 async function loadSettings() {
   try {
     const res = await fetch("/api/settings");
@@ -1294,15 +1297,91 @@ async function loadSettings() {
     if (chatInput) {
       chatInput.value = data.telegram_chat_id || "";
     }
-    // Auto-fill monitor creation chat ID if currently empty
+
+    const connectedView = document.getElementById("tg-connected-view");
+    const unconnectedView = document.getElementById("tg-unconnected-view");
+
     if (data.telegram_chat_id) {
+      // Connected State
+      if (pairPollInterval) {
+        clearInterval(pairPollInterval);
+        pairPollInterval = null;
+      }
+      if (connectedView) connectedView.classList.remove("hidden");
+      if (unconnectedView) unconnectedView.classList.add("hidden");
+
+      const nameElem = document.getElementById("tg-display-name");
+      const chatElem = document.getElementById("tg-display-chat-id");
+      if (nameElem) nameElem.textContent = data.telegram_user_name || "You";
+      if (chatElem) chatElem.textContent = data.telegram_chat_id;
+
+      // Auto-fill monitor creation chat ID if currently empty
       const monInput = document.getElementById("monitor-telegram-chat-id");
       if (monInput && !monInput.value) {
         monInput.value = data.telegram_chat_id;
       }
+    } else {
+      // Unconnected / Pairing State
+      if (connectedView) connectedView.classList.add("hidden");
+      if (unconnectedView) unconnectedView.classList.remove("hidden");
+      start1ClickPairing();
     }
   } catch (err) {
     console.error("Failed to load settings:", err);
+  }
+}
+
+async function start1ClickPairing() {
+  if (pairPollInterval) {
+    clearInterval(pairPollInterval);
+    pairPollInterval = null;
+  }
+
+  try {
+    const res = await fetch("/api/telegram/pair_code");
+    const data = await res.json();
+    if (data.success && data.code) {
+      currentPairCode = data.code;
+      const btn = document.getElementById("tg-1click-btn");
+      if (btn) {
+        btn.href = data.deep_link;
+      }
+      const qrImg = document.getElementById("tg-qr-img");
+      if (qrImg) {
+        qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(data.deep_link)}`;
+      }
+
+      // Start polling for pairing confirmation every 2 seconds
+      pairPollInterval = setInterval(async () => {
+        try {
+          const statusRes = await fetch(`/api/telegram/pair_status?code=${currentPairCode}`);
+          const statusData = await statusRes.json();
+          if (statusData.status === "PAIRED" && statusData.chat_id) {
+            clearInterval(pairPollInterval);
+            pairPollInterval = null;
+            showAlert(`🎉 Connected! Welcome, ${statusData.first_name || "Friend"}! Telegram is linked.`, "success");
+            loadSettings();
+          }
+        } catch (e) {
+          // ignore transient poll error
+        }
+      }, 2000);
+    }
+  } catch (err) {
+    console.error("Failed to generate pairing code:", err);
+  }
+}
+
+async function disconnectTelegram() {
+  if (!confirm("Are you sure you want to disconnect your Telegram account from SeatWatch?")) {
+    return;
+  }
+  try {
+    await fetch("/api/telegram/disconnect", { method: "POST" });
+    showAlert("Telegram account unlinked. You can pair again with 1 click.", "info");
+    loadSettings();
+  } catch (err) {
+    showAlert("Failed to disconnect: " + err.message, "error");
   }
 }
 

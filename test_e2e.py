@@ -284,5 +284,25 @@ class TestSeatWatchSystem(unittest.TestCase):
         print(f"[OK] Sold-out reference layout fallback verified: {data['total_seats']} seats loaded.")
 
 
+    def test_13_telegram_1click_pairing(self):
+        # 1. Generate pairing code
+        res = self.client.get("/api/telegram/pair_code")
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertTrue(data.get("success"))
+        code = data.get("code")
+        self.assertTrue(code.startswith("sw_"))
+        self.assertIn("deep_link", data)
+        self.assertIn(code, data["deep_link"])
+
+        # 2. Check initial pending status
+        status_res = self.client.get(f"/api/telegram/pair_status?code={code}")
+        self.assertEqual(status_res.status_code, 200)
+        status_data = status_res.json()
+        self.assertEqual(status_data.get("status"), "PENDING")
+
+        print("[OK] Telegram 1-click deep-link pairing endpoints verified.")
+
+
 if __name__ == "__main__":
     unittest.main()
