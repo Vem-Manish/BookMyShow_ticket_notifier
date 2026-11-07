@@ -21,3 +21,7 @@ seatwatch.db
 *.swo
 .DS_Store
 Thumbs.db
+
+# Data persistence directory
+data/
+*.db

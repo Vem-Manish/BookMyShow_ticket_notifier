@@ -8,6 +8,7 @@ import base64
 from datetime import datetime, timedelta
 import json
 import logging
+import os
 import re
 from typing import Any, Dict, List, Optional
 from cryptography.hazmat.backends import default_backend
@@ -31,13 +32,16 @@ DEFAULT_HEADERS = {
 class BMSClient:
     def __init__(self, browser_profile: str = "chrome"):
         self.browser_profile = browser_profile
+        proxy = os.getenv("BMS_PROXY") or os.getenv("HTTPS_PROXY") or os.getenv("HTTP_PROXY")
         client = None
         for prof in [browser_profile, "chrome", "chrome_126", "chrome_124", None]:
             try:
+                kwargs = {"timeout": 10}
                 if prof:
-                    client = primp.Client(impersonate=prof, timeout=10)
-                else:
-                    client = primp.Client(timeout=10)
+                    kwargs["impersonate"] = prof
+                if proxy:
+                    kwargs["proxy"] = proxy
+                client = primp.Client(**kwargs)
                 break
             except Exception:
                 continue

@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fff2b2"/>
+      <stop offset="50%" stop-color="#d4af37"/>
+      <stop offset="100%" stop-color="#aa771c"/>
+    </linearGradient>
+    <linearGradient id="bodyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1b050a"/>
+      <stop offset="60%" stop-color="#4a0812"/>
+      <stop offset="100%" stop-color="#0a0b10"/>
+    </linearGradient>
+  </defs>
+  <!-- Board Body -->
+  <rect x="6" y="24" width="52" height="34" rx="5" fill="url(#bodyGrad)" stroke="url(#goldGrad)" stroke-width="2"/>
+  <!-- Clapper Top Stick -->
+  <rect x="6" y="8" width="52" height="12" rx="3" fill="#0d0e14" stroke="url(#goldGrad)" stroke-width="2"/>
+  <!-- Chevrons -->
+  <path d="M12 8 L20 20 L26 20 L18 8 Z" fill="url(#goldGrad)"/>
+  <path d="M26 8 L34 20 L40 20 L32 8 Z" fill="url(#goldGrad)"/>
+  <path d="M40 8 L48 20 L54 20 L46 8 Z" fill="url(#goldGrad)"/>
+  <!-- Center Star or Radar Wave -->
+  <circle cx="32" cy="41" r="5" fill="none" stroke="url(#goldGrad)" stroke-width="1.5"/>
+  <circle cx="32" cy="41" r="2.5" fill="#e52b50"/>
+  <path d="M22 41 A10 10 0 0 1 42 41" fill="none" stroke="url(#goldGrad)" stroke-width="1.2" stroke-dasharray="2,2"/>
+</svg>

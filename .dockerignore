@@ -10,3 +10,6 @@ seatwatch.db
 *.log
 venv
 .venv
+
+data/
+*.db

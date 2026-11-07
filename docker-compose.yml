@@ -9,14 +9,18 @@ services:
       - "8000:8000"
     environment:
       - PORT=8000
-      # - TELEGRAM_BOT_TOKEN=your_custom_bot_token (optional override)
-      # Optional: set default chat id directly via env
+      - HOST=0.0.0.0
+      - SEATWATCH_DB_PATH=/app/data/seatwatch.db
+      # Optional: Cloud proxy to bypass BMS datacenter IP blocks
+      # - BMS_PROXY=http://user:pass@proxy-host:port
+      # Optional: Override Telegram bot token / chat ID
+      # - TELEGRAM_BOT_TOKEN=your_custom_bot_token
       # - TELEGRAM_CHAT_ID=your_chat_id_here
     volumes:
       # Persist SQLite database across container restarts
       - ./data:/app/data
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
       timeout: 5s
       retries: 3

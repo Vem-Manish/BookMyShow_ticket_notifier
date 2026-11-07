@@ -63,6 +63,33 @@ os.makedirs(STATIC_DIR, exist_ok=True)
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 
+@app.get("/favicon.ico", include_in_schema=False)
+def serve_favicon():
+    fav_file = os.path.join(STATIC_DIR, "favicon.svg")
+    if os.path.exists(fav_file):
+        return FileResponse(fav_file, media_type="image/svg+xml")
+    from fastapi import Response
+    return Response(status_code=204)
+
+
+@app.get("/health")
+@app.get("/api/health")
+def health_check():
+    """Liveness & health probe for cloud monitoring, Docker, and uptime services."""
+    try:
+        monitors = get_all_monitors()
+        scheduler_running = bool(scheduler_instance.scheduler and scheduler_instance.scheduler.running)
+        return {
+            "status": "healthy",
+            "service": "SeatWatch",
+            "scheduler": "running" if scheduler_running else "stopped",
+            "active_monitors": sum(1 for m in monitors if m.get("status") == "ACTIVE"),
+            "total_monitors": len(monitors),
+        }
+    except Exception as e:
+        return {"status": "degraded", "error": str(e)}
+
+
 @app.get("/")
 def serve_index():
     index_file = os.path.join(STATIC_DIR, "index.html")
