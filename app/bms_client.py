@@ -691,6 +691,13 @@ class BMSClient:
                             for st in sec.get("showtimes", []):
                                 cta_data = st.get("cta", {}).get("analytics", {})
                                 add_st = st.get("additionalData", {})
+
+                                # Strict date validation: BMS buytickets page defaults to today when a future date has not opened yet
+                                show_date = str(add_st.get("showDateCode") or (add_st.get("showDateTime")[:8] if add_st.get("showDateTime") else "")).replace("-", "").strip()
+                                norm_date = str(date_code).replace("-", "").strip()
+                                if show_date and norm_date and show_date != norm_date:
+                                    continue
+
                                 session_id = add_st.get("sessionId") or cta_data.get("show_session_id")
                                 show_time = st.get("title") or add_st.get("showTime")
                                 screen_attr = st.get("screenAttr") or add_st.get("attributes", "")
@@ -702,6 +709,7 @@ class BMSClient:
                                     "show_time": show_time,
                                     "format": screen_attr or "Standard 2D",
                                     "screen_attr": screen_attr,
+                                    "show_date": show_date or norm_date,
                                     "booking_url": booking_url
                                 })
 

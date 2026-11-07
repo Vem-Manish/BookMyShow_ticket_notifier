@@ -224,6 +224,10 @@ class MonitoringScheduler:
                             for show in v.get("showtimes", []):
                                 show_format = show.get("format") or ""
                                 show_attr = show.get("screen_attr") or ""
+                                show_date = str(show.get("show_date") or "").replace("-", "").strip()
+                                norm_target = str(target_date).replace("-", "").strip()
+                                if show_date and norm_target and show_date != norm_target:
+                                    continue
                                 if format_matches(show_format, show_attr, show_attr, "", format_filter, event_code):
                                     sid = str(show.get("session_id", "")).strip()
                                     if sid and not any(c["session_id"] == sid for c in candidate_shows):
