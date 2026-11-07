@@ -2636,3 +2636,108 @@ main {
   border: 1px solid rgba(212, 175, 55, 0.35);
   letter-spacing: 0.5px;
 }
+
+/* ── AUTHENTIC CINEMA PALACE CUSTOM RADIO BUTTONS ─────────── */
+input[type="radio"],
+.cinema-radio {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-color: #06070a;
+  margin: 0;
+  font: inherit;
+  color: var(--gold-bright);
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid rgba(212, 175, 55, 0.45);
+  border-radius: 50%;
+  display: inline-grid;
+  place-content: center;
+  cursor: pointer;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  vertical-align: middle;
+  flex-shrink: 0;
+  position: relative;
+  outline: none;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.9);
+}
+
+input[type="radio"]::before,
+.cinema-radio::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  transform: scale(0);
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  background: radial-gradient(circle, #fff7cc 0%, #d4af37 60%, #9e7019 100%);
+  box-shadow: 0 0 8px rgba(212, 175, 55, 0.95);
+}
+
+input[type="radio"]:hover,
+.cinema-radio:hover {
+  border-color: var(--gold-bright);
+  background-color: rgba(212, 175, 55, 0.12);
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.35);
+  transform: scale(1.05);
+}
+
+input[type="radio"]:checked,
+.cinema-radio:checked {
+  border-color: var(--gold-bright) !important;
+  background-color: #0c0e16 !important;
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.5), inset 0 0 4px rgba(212, 175, 55, 0.25) !important;
+}
+
+input[type="radio"]:checked::before,
+.cinema-radio:checked::before {
+  transform: scale(1);
+}
+
+input[type="radio"]:focus-visible,
+.cinema-radio:focus-visible {
+  outline: 2px solid var(--gold-metallic);
+  outline-offset: 2px;
+}
+
+/* Radio Group & Cinema Radio Chip Labels */
+.cinema-radio-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.cinema-radio-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 11px;
+  color: var(--text-silver);
+  font-family: 'Montserrat', sans-serif;
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  background: rgba(14, 16, 24, 0.7);
+  border: 1px solid rgba(212, 175, 55, 0.22);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cinema-radio-label:hover {
+  background: rgba(212, 175, 55, 0.1);
+  border-color: rgba(212, 175, 55, 0.45);
+  color: var(--text-parchment);
+  transform: translateY(-1px);
+}
+
+.cinema-radio-label:has(input[type="radio"]:checked) {
+  background: linear-gradient(135deg, rgba(107, 14, 29, 0.35) 0%, rgba(35, 24, 18, 0.85) 100%) !important;
+  border-color: var(--gold-bright) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.7), 0 0 12px rgba(212, 175, 55, 0.25) !important;
+}
+
+.cinema-radio-label:has(input[type="radio"]:checked) strong {
+  color: var(--gold-bright);
+}

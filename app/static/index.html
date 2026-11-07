@@ -320,14 +320,14 @@
                   <span style="color:var(--text-silver);font-weight:600">
                     <i class="fa-solid fa-sliders" style="color:var(--velvet-bright)"></i> Selection Matching Strategy:
                   </span>
-                  <div class="flex items-center gap-4">
-                    <label class="flex items-center gap-2" style="cursor:pointer">
-                      <input type="radio" name="zones-match-logic" value="ANY" checked onchange="updateZonesMatchLogic(this.value)">
-                      <span>Alert if ANY Selection Matches (OR)</span>
+                  <div class="cinema-radio-group">
+                    <label class="cinema-radio-label">
+                      <input type="radio" class="cinema-radio" name="zones-match-logic" value="ANY" checked onchange="updateZonesMatchLogic(this.value); if(window.playCinemaSound) playCinemaSound('click');">
+                      <span>Alert if <strong>ANY</strong> Selection Matches (OR)</span>
                     </label>
-                    <label class="flex items-center gap-2" style="cursor:pointer">
-                      <input type="radio" name="zones-match-logic" value="ALL" onchange="updateZonesMatchLogic(this.value)">
-                      <span>Match ALL Selections (AND)</span>
+                    <label class="cinema-radio-label">
+                      <input type="radio" class="cinema-radio" name="zones-match-logic" value="ALL" onchange="updateZonesMatchLogic(this.value); if(window.playCinemaSound) playCinemaSound('click');">
+                      <span>Match <strong>ALL</strong> Selections (AND)</span>
                     </label>
                   </div>
                 </div>
@@ -346,12 +346,14 @@
               <div id="rule-panel-EXACT" class="hidden space-y-3">
                 <label style="font-size:11px;color:var(--text-silver);display:block">Comma-separated specific seat numbers:</label>
                 <input type="text" id="exact-seats" placeholder="e.g. G10, G11, G12" class="form-input font-mono">
-                <div class="flex gap-4" style="font-size:11px">
-                  <label class="flex items-center gap-2" style="cursor:pointer">
-                    <input type="radio" name="exact-mode" value="ALL" checked> All must be available
+                <div class="cinema-radio-group mt-2">
+                  <label class="cinema-radio-label">
+                    <input type="radio" class="cinema-radio" name="exact-mode" value="ALL" checked onchange="if(window.playCinemaSound) playCinemaSound('click');">
+                    <span><strong>All</strong> must be available</span>
                   </label>
-                  <label class="flex items-center gap-2" style="cursor:pointer">
-                    <input type="radio" name="exact-mode" value="ANY"> At least one available
+                  <label class="cinema-radio-label">
+                    <input type="radio" class="cinema-radio" name="exact-mode" value="ANY" onchange="if(window.playCinemaSound) playCinemaSound('click');">
+                    <span><strong>At least one</strong> available</span>
                   </label>
                 </div>
               </div>
