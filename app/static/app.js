@@ -684,9 +684,7 @@ function renderFormats(formats) {
   formats.forEach((f, fIdx) => {
     const card = document.createElement("div");
     card.id = `format-card-${fIdx}`;
-    card.className = `format-card p-4 rounded-xl border cursor-pointer transition text-left flex flex-col justify-between ${
-      fIdx === 0 ? "border-rose-500 bg-rose-500/10 shadow-md shadow-rose-500/10" : "border-slate-800 bg-slate-900/80 hover:border-slate-700"
-    }`;
+    card.className = `format-card ${fIdx === 0 ? "selected" : ""}`;
 
     const hasShows = f.shows && f.shows.length > 0;
     const isMultiShow = f.shows && f.shows.length > 1;
@@ -704,9 +702,9 @@ function renderFormats(formats) {
       const allShowsBtn = isMultiShow ? `
         <button type="button"
           id="show-pill-${fIdx}-all"
-          class="show-pill show-all-pill px-2.5 py-1 rounded-lg text-[11px] font-mono font-bold border transition bg-rose-600 text-white border-rose-500 shadow-sm shadow-rose-600/30"
+          class="show-pill show-all-pill"
           onclick="onShowtimeAllPillClicked(event, ${fIdx})">
-          <i class="fa-solid fa-sparkles text-[10px]"></i> All Shows (${f.shows.length})
+          <i class="fa-solid fa-sparkles"></i> All Shows (${f.shows.length})
         </button>
       ` : "";
 
@@ -717,9 +715,9 @@ function renderFormats(formats) {
           return `
             <button type="button"
               id="tag-pill-${fIdx}-${tag}"
-              class="tag-filter-pill px-2.5 py-1 rounded-lg text-[10px] font-bold border transition bg-amber-500/15 text-amber-300 border-amber-500/40 hover:bg-amber-500/25 flex items-center gap-1 shadow-sm"
+              class="tag-filter-pill"
               onclick="onTagFilterClicked(event, ${fIdx}, '${tag}')">
-              <i class="fa-solid fa-star text-[9px] text-amber-400"></i> ⭐ ${tag} Shows (${matchingCount})
+              <i class="fa-solid fa-star"></i> ${tag} (${matchingCount})
             </button>
           `;
         }).join(" ");
@@ -728,7 +726,7 @@ function renderFormats(formats) {
       const showTimesHtml = f.shows.map((s, sIdx) => {
         const hasTag = Boolean(s.attributes);
         const tagBadge = hasTag ? `
-          <span class="ml-1 px-1 py-0.2 rounded text-[9px] bg-amber-400/20 text-amber-300 font-extrabold border border-amber-400/30">
+          <span class="show-attr-badge">
             ${s.attributes}
           </span>
         ` : "";
@@ -736,11 +734,7 @@ function renderFormats(formats) {
           <button type="button"
             id="show-pill-${fIdx}-${sIdx}"
             title="${s.screen || ''}${s.attributes ? ' • ' + s.attributes : ''}"
-            class="show-pill px-2.5 py-1 rounded-lg text-[11px] font-mono font-medium border transition ${
-              !isMultiShow && fIdx === 0 && sIdx === 0
-                ? "bg-rose-600 text-white border-rose-500 font-bold shadow-sm shadow-rose-600/30"
-                : "bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700"
-            }"
+            class="show-pill ${!isMultiShow && fIdx === 0 && sIdx === 0 ? "active" : ""}"
             onclick="onShowtimePillClicked(event, ${fIdx}, ${sIdx})">
             ${s.show_time}${tagBadge}
           </button>
@@ -748,12 +742,12 @@ function renderFormats(formats) {
       }).join(" ");
 
       bottomActionHtml = `
-        <div class="pt-2 border-t border-slate-800/80 space-y-1.5">
-          <div class="flex items-center justify-between">
-            <span class="text-[10px] text-slate-400">Select showtime to monitor & view layout:</span>
-            ${tagFiltersHtml ? `<div class="flex items-center gap-1">${tagFiltersHtml}</div>` : ''}
+        <div class="format-card-bottom">
+          <div class="format-shows-header">
+            <span class="format-shows-label">Select showtime to monitor & view layout:</span>
+            ${tagFiltersHtml ? `<div class="tag-filters-container">${tagFiltersHtml}</div>` : ''}
           </div>
-          <div class="flex flex-wrap gap-1.5">
+          <div class="show-pills-wrap">
             ${allShowsBtn}
             ${showTimesHtml}
           </div>
@@ -764,12 +758,14 @@ function renderFormats(formats) {
       let unopenedTagsHtml = "";
       if (predictedTags.length > 0) {
         unopenedTagsHtml = `
-          <div class="pt-1.5 flex items-center gap-1.5 flex-wrap">
-            <span class="text-[10px] text-slate-400 font-medium">Target Screen Tag:</span>
-            <button type="button" class="unopened-tag-pill active px-2 py-0.5 rounded-md text-[10px] font-bold border bg-rose-600 text-white border-rose-500" onclick="onUnopenedScreenFilterClicked(event, ${fIdx}, 'ALL', this)">All Screens</button>
+          <div class="unopened-tags-row">
+            <span class="unopened-tags-label">Target Screen Tag:</span>
+            <button type="button" class="unopened-tag-pill active" onclick="onUnopenedScreenFilterClicked(event, ${fIdx}, 'ALL', this)">
+              <i class="fa-solid fa-expand"></i> All Screens
+            </button>
             ${predictedTags.map(t => `
-              <button type="button" class="unopened-tag-pill px-2 py-0.5 rounded-md text-[10px] font-bold border bg-slate-800 text-amber-300 border-amber-500/30 hover:border-amber-400 flex items-center gap-1" onclick="onUnopenedScreenFilterClicked(event, ${fIdx}, '${t}', this)">
-                <i class="fa-solid fa-star text-[8px] text-amber-400"></i> ${t} Screens Only
+              <button type="button" class="unopened-tag-pill" onclick="onUnopenedScreenFilterClicked(event, ${fIdx}, '${t}', this)">
+                <i class="fa-solid fa-star"></i> ${t} Screens Only
               </button>
             `).join("")}
           </div>
@@ -777,17 +773,17 @@ function renderFormats(formats) {
       }
 
       bottomActionHtml = `
-        <div class="pt-2 border-t border-slate-800/80 space-y-1.5">
-          <div class="flex items-center justify-between">
-            <span class="text-[10px] text-amber-400 font-medium flex items-center gap-1">
+        <div class="format-card-bottom">
+          <div class="unopened-status-row">
+            <span class="unopened-future-badge">
               <i class="fa-solid fa-clock"></i> Unopened Future Date
             </span>
-            <span class="text-[10px] px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 font-semibold border border-rose-500/30">
-              Auto-Alert Ready
+            <span class="unopened-ready-badge">
+              <span class="dot"></span> Auto-Alert Ready
             </span>
           </div>
           ${unopenedTagsHtml}
-          <button type="button" class="w-full py-1.5 px-3 rounded-lg bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border border-rose-500/30 text-xs font-semibold flex items-center justify-center gap-1.5 transition">
+          <button type="button" class="unopened-target-btn" onclick="event.stopPropagation(); selectFormat(selectedMovieObj.formats[${fIdx}], document.getElementById('format-card-${fIdx}'), 0, false); if (window.playCinemaSound) playCinemaSound('click');">
             <i class="fa-solid fa-bell"></i> Target this format for opening alert
           </button>
         </div>
@@ -795,19 +791,19 @@ function renderFormats(formats) {
     }
 
     card.innerHTML = `
-      <div>
-        <div class="flex items-start justify-between gap-2 mb-1.5">
-          <span class="text-xs font-bold text-white flex items-center gap-1.5">
-            <i class="fa-solid fa-film text-rose-400"></i>
+      <div class="format-card-header">
+        <div class="format-card-title-row">
+          <span class="format-name-title">
+            <i class="fa-solid fa-film"></i>
             ${f.format_name}
           </span>
-          <span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-mono border border-slate-700">
-            ${f.screen}
+          <span class="format-screen-badge">
+            ${f.screen || 'ANY SCREEN'}
           </span>
         </div>
-        <div class="text-[11px] text-slate-400 mb-2">
-          ${f.attributes ? `<span class="text-amber-400 mr-1.5 font-medium">${f.attributes}</span>` : ''}
-          <span class="text-slate-500">${f.event_code ? `Event: ${f.event_code}` : ''}</span>
+        <div class="format-card-meta">
+          ${f.attributes ? `<span class="format-attr-tag">${f.attributes}</span>` : ''}
+          <span class="format-event-code">${f.event_code ? `Event: ${f.event_code}` : ''}</span>
         </div>
       </div>
       ${bottomActionHtml}
@@ -849,27 +845,15 @@ function onTagFilterClicked(event, fIdx, tag) {
     document.getElementById("selected-showtime-str").value = `All ${tag} Shows (${matchingShows.length})`;
 
     // Reset format card highlights
-    document.querySelectorAll(".format-card").forEach(c => {
-      c.className = "format-card p-4 rounded-xl border cursor-pointer transition text-left flex flex-col justify-between border-slate-800 bg-slate-900/80 hover:border-slate-700";
-    });
-    if (cardElement) {
-      cardElement.className = "format-card p-4 rounded-xl border cursor-pointer transition text-left flex flex-col justify-between border-rose-500 bg-rose-500/10 shadow-md shadow-rose-500/10";
-    }
+    document.querySelectorAll(".format-card").forEach(c => c.classList.remove("selected", "active"));
+    if (cardElement) cardElement.classList.add("selected", "active");
 
     // Reset show pills
-    cardElement.querySelectorAll(".show-pill").forEach(p => {
-      p.className = "show-pill px-2.5 py-1 rounded-lg text-[11px] font-mono font-medium border transition bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700";
-    });
-    cardElement.querySelectorAll(".tag-filter-pill").forEach(p => {
-      p.classList.remove("bg-amber-500", "text-slate-950", "border-amber-400", "font-extrabold");
-      p.classList.add("bg-amber-500/15", "text-amber-300", "border-amber-500/40");
-    });
+    cardElement.querySelectorAll(".show-pill").forEach(p => p.classList.remove("active"));
+    cardElement.querySelectorAll(".tag-filter-pill").forEach(p => p.classList.remove("active"));
 
     const activePill = cardElement.querySelector(`#tag-pill-${fIdx}-${tag}`);
-    if (activePill) {
-      activePill.classList.remove("bg-amber-500/15", "text-amber-300");
-      activePill.classList.add("bg-amber-500", "text-slate-950", "border-amber-400", "font-extrabold");
-    }
+    if (activePill) activePill.classList.add("active");
 
     const directLink = document.getElementById("bms-direct-seat-link");
     if (directLink) directLink.classList.add("hidden");
@@ -887,9 +871,9 @@ function onUnopenedScreenFilterClicked(event, fIdx, tag, btn) {
   document.getElementById("selected-screen-filter").value = tag;
   const parent = btn.parentElement;
   parent.querySelectorAll(".unopened-tag-pill").forEach(b => {
-    b.className = "unopened-tag-pill px-2 py-0.5 rounded-md text-[10px] font-bold border bg-slate-800 text-amber-300 border-amber-500/30 hover:border-amber-400 flex items-center gap-1";
+    b.classList.remove("active");
   });
-  btn.className = "unopened-tag-pill active px-2 py-0.5 rounded-md text-[10px] font-bold border bg-amber-500 text-slate-950 border-amber-400 font-extrabold flex items-center gap-1";
+  btn.classList.add("active");
 
   const formatObj = selectedMovieObj.formats[fIdx];
   const screenParam = tag === "ALL" ? (formatObj.screen || "") : tag;
@@ -910,14 +894,14 @@ function selectFormat(formatObj, cardElement, showIdx = 0, isAll = false) {
   selectedFormatObj = formatObj;
 
   document.querySelectorAll(".format-card").forEach(c => {
-    c.className = "format-card p-4 rounded-xl border cursor-pointer transition text-left flex flex-col justify-between border-slate-800 bg-slate-900/80 hover:border-slate-700";
+    c.classList.remove("selected", "active");
   });
   if (cardElement) {
-    cardElement.className = "format-card p-4 rounded-xl border cursor-pointer transition text-left flex flex-col justify-between border-rose-500 bg-rose-500/10 shadow-md shadow-rose-500/10";
+    cardElement.classList.add("selected", "active");
   }
 
   document.querySelectorAll(".show-pill").forEach(p => {
-    p.className = "show-pill px-2.5 py-1 rounded-lg text-[11px] font-mono font-medium border transition bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700";
+    p.classList.remove("active");
   });
 
   document.getElementById("selected-event-code").value = formatObj.event_code || "";
@@ -933,16 +917,10 @@ function selectFormat(formatObj, cardElement, showIdx = 0, isAll = false) {
       document.getElementById("selected-showtime-str").value = `All Shows (${formatObj.shows.length})`;
 
       const allPill = cardElement?.querySelector(`#show-pill-${formatIndex}-all`);
-      if (allPill) {
-        allPill.className = "show-pill px-2.5 py-1 rounded-lg text-[11px] font-mono font-bold border transition bg-rose-600 text-white border-rose-500 shadow-sm shadow-rose-600/30";
-      }
+      if (allPill) allPill.classList.add("active");
 
-      if (directLink) {
-        directLink.classList.add("hidden");
-      }
-
+      if (directLink) directLink.classList.add("hidden");
       if (seatMapSection) seatMapSection.classList.remove("hidden");
-      // Load first show as interactive preview layout
       loadLiveSeatMap(formatObj.shows[0].session_id, formatObj.shows[0].screen);
     } else {
       const validIndex = Math.min(showIdx, formatObj.shows.length - 1);
@@ -951,9 +929,7 @@ function selectFormat(formatObj, cardElement, showIdx = 0, isAll = false) {
       document.getElementById("selected-showtime-str").value = chosenShow.show_time || "";
 
       const activePill = cardElement?.querySelector(`#show-pill-${formatIndex}-${validIndex}`);
-      if (activePill) {
-        activePill.className = "show-pill px-2.5 py-1 rounded-lg text-[11px] font-mono font-medium border transition bg-rose-600 text-white border-rose-500 font-bold shadow-sm shadow-rose-600/30";
-      }
+      if (activePill) activePill.classList.add("active");
 
       if (directLink) {
         directLink.classList.remove("hidden");
@@ -967,9 +943,7 @@ function selectFormat(formatObj, cardElement, showIdx = 0, isAll = false) {
     // Unopened future date or format without sessions: show verified reference layout!
     document.getElementById("selected-session-id").value = "";
     document.getElementById("selected-showtime-str").value = "";
-    if (directLink) {
-      directLink.classList.add("hidden");
-    }
+    if (directLink) directLink.classList.add("hidden");
     if (seatMapSection) seatMapSection.classList.remove("hidden");
     loadLiveSeatMap("", formatObj.screen || "");
   }
