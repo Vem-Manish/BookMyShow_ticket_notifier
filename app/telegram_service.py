@@ -93,10 +93,17 @@ class TelegramPairingService:
 
     async def _polling_loop(self):
         offset = 0
-        logger.info("Telegram background polling active.")
+        logger.info("Telegram on-demand pairing listener initialized.")
 
         while self.running:
             try:
+                self._cleanup_expired()
+                # On-demand polling: Only poll Telegram when a user is actively trying to pair
+                has_pending = any(s.get("status") == "PENDING" for s in self.pairing_sessions.values())
+                if not has_pending:
+                    await asyncio.sleep(2)
+                    continue
+
                 settings = get_settings()
                 token = settings.get("telegram_bot_token") or DEFAULT_BOT_TOKEN
                 if not token:
@@ -104,9 +111,9 @@ class TelegramPairingService:
                     continue
 
                 url = f"https://api.telegram.org/bot{token}/getUpdates"
-                params = {"offset": offset, "timeout": 10, "limit": 10}
+                params = {"offset": offset, "timeout": 8, "limit": 10}
 
-                async with httpx.AsyncClient(timeout=25) as client:
+                async with httpx.AsyncClient(timeout=20) as client:
                     resp = await client.get(url, params=params)
                     if resp.status_code == 200:
                         data = resp.json()
@@ -181,16 +188,15 @@ class TelegramPairingService:
                                     await self._send_telegram_reply(token, chat_id, info_msg)
 
                     elif resp.status_code == 409:
-                        # Webhook conflict or another poller active
-                        logger.warning("Telegram polling conflict (409). Pausing for 5 seconds...")
-                        await asyncio.sleep(5)
+                        # Another process is polling getUpdates. Back off cleanly without console spam.
+                        await asyncio.sleep(10)
                     else:
                         await asyncio.sleep(2)
 
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                logger.error(f"Error in Telegram poller: {e}")
+                logger.debug(f"Telegram poller exception: {e}")
                 await asyncio.sleep(3)
 
 
