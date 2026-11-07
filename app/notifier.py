@@ -39,6 +39,10 @@ class TelegramNotifier:
             logger.warning("Telegram Bot Token or Chat ID not configured. Skipping push notification.")
             return False
 
+        if str(chat_id).startswith("mock_") or str(chat_id).startswith("test_"):
+            logger.info(f"Skipping notification for mock/test chat ID: {chat_id}")
+            return False
+
         # Format date for display: YYYYMMDD -> YYYY-MM-DD
         display_date = target_date
         if len(target_date) == 8 and target_date.isdigit():

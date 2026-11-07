@@ -258,6 +258,7 @@ class TestSeatWatchSystem(unittest.TestCase):
             "rule_payload": {
                 "screen_filter": "PXL",
                 "match_logic": "ANY",
+                "telegram_chat_id": "mock_e2e_test",
                 "zones": [{
                     "row_start": "B",
                     "row_end": "I",
