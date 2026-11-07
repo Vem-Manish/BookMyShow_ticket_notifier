@@ -306,5 +306,60 @@ class TestSeatWatchSystem(unittest.TestCase):
         print("[OK] Telegram 1-click deep-link pairing endpoints verified.")
 
 
+    def test_14_telegram_isolation_and_gating(self):
+        # 1. Attempt to create a monitor without Telegram Chat ID -> Must fail with 400
+        req_without_tg = {
+            "title": "Ungated Watch",
+            "city_code": "HYD",
+            "city_slug": "hyderabad",
+            "movie_title": "Ramayana",
+            "movie_slug": "ramayana",
+            "event_code": "ET00523252",
+            "venue_name": "ALLU Cinemas: Kokapet",
+            "venue_code": "ALUC",
+            "target_date": "20261110",
+            "format_filter": "Telugu • DOLBY CINEMA 3D",
+            "session_id": "ALL",
+            "rule_type": "BOOKING_OPEN",
+            "rule_payload": {}
+        }
+        res_fail = self.client.post("/api/monitors", json=req_without_tg)
+        self.assertEqual(res_fail.status_code, 400)
+        self.assertIn("connected Telegram account", res_fail.json()["detail"])
+
+        # 2. Create monitor for User A (Chat ID: 111111)
+        req_user_a = dict(req_without_tg)
+        req_user_a["rule_payload"] = {"telegram_chat_id": "111111"}
+        res_a = self.client.post("/api/monitors", json=req_user_a)
+        self.assertEqual(res_a.status_code, 200)
+        mon_a_id = res_a.json()["monitor_id"]
+
+        # 3. Create monitor for User B (Chat ID: 222222)
+        req_user_b = dict(req_without_tg)
+        req_user_b["rule_payload"] = {"telegram_chat_id": "222222"}
+        res_b = self.client.post("/api/monitors", json=req_user_b)
+        self.assertEqual(res_b.status_code, 200)
+        mon_b_id = res_b.json()["monitor_id"]
+
+        # 4. User A queries monitors -> Must see ONLY User A's monitors
+        res_list_a = self.client.get("/api/monitors?telegram_chat_id=111111")
+        self.assertEqual(res_list_a.status_code, 200)
+        ids_a = [m["id"] for m in res_list_a.json()]
+        self.assertIn(mon_a_id, ids_a)
+        self.assertNotIn(mon_b_id, ids_a)
+
+        # 5. User B queries monitors -> Must see ONLY User B's monitors
+        res_list_b = self.client.get("/api/monitors?telegram_chat_id=222222")
+        self.assertEqual(res_list_b.status_code, 200)
+        ids_b = [m["id"] for m in res_list_b.json()]
+        self.assertIn(mon_b_id, ids_b)
+        self.assertNotIn(mon_a_id, ids_b)
+
+        # Clean up
+        self.client.delete(f"/api/monitors/{mon_a_id}")
+        self.client.delete(f"/api/monitors/{mon_b_id}")
+        print("[OK] Telegram watcher creation gating & multi-user isolation verified.")
+
+
 if __name__ == "__main__":
     unittest.main()

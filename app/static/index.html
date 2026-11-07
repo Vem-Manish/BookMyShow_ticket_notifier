@@ -7,7 +7,8 @@
   <meta name="description" content="SeatWatch monitors BookMyShow every 2 minutes and sends instant Telegram alerts when your preferred cinema seats become available. Never miss a blockbuster again.">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
-  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+
   <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
@@ -43,13 +44,14 @@
           <i class="fa-solid fa-satellite-dish" style="color:var(--velvet-bright)"></i>
           <span>Active Radar</span>
         </button>
-        <button id="tab-create-btn" class="nav-tab" onclick="switchTab('create')">
+        <button id="tab-create-btn" class="nav-tab" onclick="openCreateWatcher()">
           <i class="fa-solid fa-ticket" style="color:var(--gold-bright)"></i>
           <span>New Watcher</span>
         </button>
         <button id="tab-settings-btn" class="nav-tab" onclick="switchTab('settings')">
           <i class="fa-brands fa-telegram" style="color:var(--neon-cyan)"></i>
-          <span>Telegram Bot</span>
+          <span id="nav-tg-label">Telegram Bot</span>
+          <span id="nav-tg-dot" style="display:inline-block;width:7px;height:7px;border-radius:50%;margin-left:4px;background:#6b7280;vertical-align:middle"></span>
         </button>
       </nav>
 
@@ -119,7 +121,7 @@
             <button onclick="loadMonitors()" class="btn btn-secondary">
               <i class="fa-solid fa-rotate-right"></i> Refresh
             </button>
-            <button onclick="switchTab('create')" class="btn btn-gold">
+            <button onclick="openCreateWatcher()" class="btn btn-gold">
               <i class="fa-solid fa-plus"></i> Create New Watch
             </button>
           </div>
@@ -128,6 +130,20 @@
         <!-- Physical Ticket Stubs Grid -->
         <div id="monitors-list">
           <!-- Rendered dynamically as physical Movie Ticket Stubs via JS -->
+        </div>
+
+        <!-- Unlinked / Disconnected State -->
+        <div id="monitors-unlinked" class="hidden empty-state">
+          <div class="empty-state-icon" style="background:rgba(0,180,255,0.12);border-color:rgba(0,180,255,0.4);color:var(--neon-cyan)">
+            <i class="fa-brands fa-telegram"></i>
+          </div>
+          <h3 class="font-cinema" style="font-size:20px;color:var(--gold-bright);margin-bottom:8px">Connect Telegram to View Your Active Watchers</h3>
+          <p style="max-width:440px;margin:0 auto 24px;color:var(--text-silver);font-size:13px;line-height:1.6">
+            Your cinema radar passes are securely linked to your Telegram account. Connect now in 1 click to view running monitors or activate new ticket surveillance!
+          </p>
+          <button onclick="switchTab('settings')" class="btn btn-telegram btn-lg">
+            <i class="fa-brands fa-telegram"></i> Connect Telegram (1-Click)
+          </button>
         </div>
 
         <!-- Empty State -->
@@ -139,7 +155,7 @@
           <p style="max-width:440px;margin:0 auto 24px;color:var(--text-silver);font-size:13px">
             You don't have any movies or screens being monitored. Lock onto a show now to get alerted the instant bookings open or premium seats become available!
           </p>
-          <button onclick="switchTab('create')" class="btn btn-gold btn-lg">
+          <button onclick="openCreateWatcher()" class="btn btn-gold btn-lg">
             <i class="fa-solid fa-plus"></i> Create Your First Watcher Ticket
           </button>
         </div>
@@ -385,13 +401,13 @@
                 </select>
               </div>
 
-              <div style="background:rgba(0,0,0,0.5);border:1px solid rgba(0,180,255,0.3);border-radius:var(--radius-md);padding:14px 18px;display:flex;align-items:center;gap:14px">
+              <div id="reel-telegram-card" style="background:rgba(0,0,0,0.5);border:1px solid rgba(0,180,255,0.3);border-radius:var(--radius-md);padding:14px 18px;display:flex;align-items:center;gap:14px">
                 <div style="width:40px;height:40px;border-radius:10px;background:rgba(0,180,255,0.15);border:1px solid rgba(0,180,255,0.35);display:flex;align-items:center;justify-content:center;color:var(--neon-cyan);font-size:20px;flex-shrink:0">
                   <i class="fa-brands fa-telegram"></i>
                 </div>
                 <div>
-                  <span style="font-family:'Cinzel',serif;font-size:13px;font-weight:700;color:#fff;display:block">Telegram Dispatch Active</span>
-                  <span style="font-size:11px;color:var(--text-silver);display:block">Alerts are automatically pushed to your paired Telegram (configure in <a href="javascript:switchTab('settings')" style="color:var(--neon-cyan);text-decoration:underline">Telegram Bot</a> tab)</span>
+                  <span id="reel-tg-status-title" style="font-family:'Cinzel',serif;font-size:13px;font-weight:700;color:#fff;display:block">Telegram Dispatch Active</span>
+                  <span id="reel-tg-status-desc" style="font-size:11px;color:var(--text-silver);display:block">Alerts are automatically pushed to your paired Telegram (configure in <a href="javascript:switchTab('settings')" style="color:var(--neon-cyan);text-decoration:underline">Telegram Bot</a> tab)</span>
                 </div>
               </div>
             </div>

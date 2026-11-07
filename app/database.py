@@ -91,14 +91,39 @@ def init_db():
     cursor.execute("UPDATE monitors SET status = 'ACTIVE' WHERE status = 'TRIGGERED';")
     cursor.execute("UPDATE settings SET value = ? WHERE key = 'telegram_bot_token' AND (value IS NULL OR value = '');", (DEFAULT_BOT_TOKEN,))
 
+    # Ensure telegram_chat_id column exists
+    try:
+        cursor.execute("ALTER TABLE monitors ADD COLUMN telegram_chat_id TEXT DEFAULT '';")
+    except Exception:
+        pass
+
+    try:
+        cursor.execute('''
+            UPDATE monitors 
+            SET telegram_chat_id = json_extract(rule_payload, '$.telegram_chat_id')
+            WHERE (telegram_chat_id IS NULL OR telegram_chat_id = '')
+              AND json_extract(rule_payload, '$.telegram_chat_id') IS NOT NULL
+        ''')
+    except Exception:
+        pass
+
     conn.commit()
     conn.close()
 
 
-def get_all_monitors() -> List[Dict[str, Any]]:
+def get_all_monitors(telegram_chat_id: Optional[str] = None) -> List[Dict[str, Any]]:
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM monitors ORDER BY id DESC")
+    if telegram_chat_id and str(telegram_chat_id).strip():
+        cid = str(telegram_chat_id).strip()
+        cursor.execute("""
+            SELECT * FROM monitors 
+            WHERE telegram_chat_id = ? 
+               OR rule_payload LIKE ?
+            ORDER BY id DESC
+        """, (cid, f'%"telegram_chat_id": "{cid}"%'))
+    else:
+        cursor.execute("SELECT * FROM monitors ORDER BY id DESC")
     rows = cursor.fetchall()
     conn.close()
 
@@ -134,14 +159,16 @@ def create_monitor(data: Dict[str, Any]) -> int:
     cursor = conn.cursor()
     now_str = datetime.now().isoformat()
 
-    rule_payload = json.dumps(data.get("rule_payload", {}))
+    rule_dict = data.get("rule_payload", {})
+    chat_id = str(data.get("telegram_chat_id") or rule_dict.get("telegram_chat_id") or "").strip()
+    rule_payload = json.dumps(rule_dict)
     cursor.execute("""
     INSERT INTO monitors (
         title, city_code, city_slug, movie_title, movie_slug, event_code,
         venue_name, venue_code, target_date, format_filter, session_id,
         rule_type, rule_payload, interval_minutes, status, last_status_message,
-        booking_url, created_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'ACTIVE', 'Scheduled', ?, ?)
+        booking_url, created_at, telegram_chat_id
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'ACTIVE', 'Scheduled', ?, ?, ?)
     """, (
         data.get("title", f"{data.get('movie_title')} - {data.get('venue_name')}"),
         data.get("city_code", "HYD"),
@@ -158,7 +185,8 @@ def create_monitor(data: Dict[str, Any]) -> int:
         rule_payload,
         float(data.get("interval_minutes", 2.0)),
         data.get("booking_url", ""),
-        now_str
+        now_str,
+        chat_id
     ))
     monitor_id = cursor.lastrowid
     conn.commit()

@@ -248,13 +248,19 @@ class MonitorCreateRequest(BaseModel):
 
 
 @app.get("/api/monitors")
-def list_monitors():
-    return get_all_monitors()
+def list_monitors(telegram_chat_id: Optional[str] = Query(None)):
+    return get_all_monitors(telegram_chat_id=telegram_chat_id)
 
 
 @app.post("/api/monitors")
 def add_monitor(req: MonitorCreateRequest):
     data = req.model_dump()
+    chat_id = str(data.get("rule_payload", {}).get("telegram_chat_id") or "").strip()
+    if not chat_id:
+        raise HTTPException(
+            status_code=400,
+            detail="A connected Telegram account (Chat ID) is required to receive seat alerts. Please connect your Telegram bot first."
+        )
     monitor_id = create_monitor(data)
     scheduler_instance.schedule_monitor(monitor_id, data.get("interval_minutes", 2.0))
     return {"success": True, "monitor_id": monitor_id, "message": "Monitor created and activated!"}

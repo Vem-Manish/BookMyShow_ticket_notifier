@@ -32,15 +32,122 @@ let cachedCurrentLayout = null;
 document.addEventListener("DOMContentLoaded", () => {
   initDatePresets();
   loadRegions();
+  updateTelegramNavBadge();
   loadMonitors();
   loadSettings();
   renderZoneCards();
 });
 
 // ----------------------------------------------------
+// Telegram Account Identity & Persistence (localStorage)
+// ----------------------------------------------------
+function getStoredTelegramUser() {
+  try {
+    const raw = localStorage.getItem("seatwatch_telegram_user");
+    if (raw) {
+      const u = JSON.parse(raw);
+      if (u && u.chat_id) return u;
+    }
+  } catch (e) {}
+  return null;
+}
+
+function setStoredTelegramUser(user) {
+  if (user && user.chat_id) {
+    localStorage.setItem("seatwatch_telegram_user", JSON.stringify(user));
+  } else {
+    localStorage.removeItem("seatwatch_telegram_user");
+  }
+  updateTelegramNavBadge();
+}
+
+function clearStoredTelegramUser() {
+  localStorage.removeItem("seatwatch_telegram_user");
+  updateTelegramNavBadge();
+}
+
+function updateTelegramNavBadge() {
+  const user = getStoredTelegramUser();
+  const label = document.getElementById("nav-tg-label");
+  const dot = document.getElementById("nav-tg-dot");
+  const reelCard = document.getElementById("reel-telegram-card");
+  const reelTitle = document.getElementById("reel-tg-status-title");
+  const reelDesc = document.getElementById("reel-tg-status-desc");
+
+  if (user && user.chat_id) {
+    if (label) label.textContent = user.first_name ? `Telegram (${user.first_name})` : "Telegram Linked";
+    if (dot) {
+      dot.style.background = "var(--neon-emerald)";
+      dot.style.boxShadow = "0 0 8px var(--neon-emerald)";
+      dot.title = `Connected as ${user.first_name || 'User'} (ID: ${user.chat_id})`;
+    }
+    if (reelCard) {
+      reelCard.style.borderColor = "rgba(0, 240, 152, 0.4)";
+      reelCard.style.background = "rgba(0, 240, 152, 0.05)";
+    }
+    if (reelTitle) {
+      reelTitle.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--neon-emerald);margin-right:6px"></i> Telegram Dispatch: Active (${user.chat_id})`;
+    }
+    if (reelDesc) {
+      reelDesc.innerHTML = `Instant seat alerts will be pushed to <strong>${user.first_name || 'your Telegram'}</strong> (<a href="javascript:switchTab('settings')" style="color:var(--neon-cyan);text-decoration:underline">change</a>)`;
+    }
+  } else {
+    if (label) label.textContent = "Connect Telegram";
+    if (dot) {
+      dot.style.background = "var(--gold-bright)";
+      dot.style.boxShadow = "0 0 8px var(--gold-bright)";
+      dot.title = "Telegram not connected";
+    }
+    if (reelCard) {
+      reelCard.style.borderColor = "rgba(229, 43, 80, 0.4)";
+      reelCard.style.background = "rgba(229, 43, 80, 0.05)";
+    }
+    if (reelTitle) {
+      reelTitle.innerHTML = `<i class="fa-solid fa-triangle-exclamation" style="color:var(--velvet-bright);margin-right:6px"></i> Telegram Not Connected`;
+    }
+    if (reelDesc) {
+      reelDesc.innerHTML = `<a href="javascript:switchTab('settings')" style="color:var(--gold-bright);text-decoration:underline;font-weight:700">Click here to connect Telegram in 1-Click</a> before activating.`;
+    }
+  }
+}
+
+function openCreateWatcher() {
+  const user = getStoredTelegramUser();
+  if (!user || !user.chat_id) {
+    showCinematicConfirm({
+      title: "Telegram Connection Required",
+      message: "SeatWatch dispatches real-time ticket alerts straight to your private Telegram the moment seats open. Please connect your Telegram account first to start tracking.",
+      confirmText: "Connect Telegram (1-Click)",
+      confirmIcon: "fa-brands fa-telegram",
+      onConfirm: () => {
+        switchTab("settings");
+      }
+    });
+    return;
+  }
+  switchTab("create");
+}
+
+// ----------------------------------------------------
 // Navigation
 // ----------------------------------------------------
 function switchTab(tabName) {
+  if (tabName === "create") {
+    const user = getStoredTelegramUser();
+    if (!user || !user.chat_id) {
+      showCinematicConfirm({
+        title: "Telegram Connection Required",
+        message: "SeatWatch dispatches real-time ticket alerts straight to your private Telegram the moment seats open. Please connect your Telegram account first to start tracking.",
+        confirmText: "Connect Telegram (1-Click)",
+        confirmIcon: "fa-brands fa-telegram",
+        onConfirm: () => {
+          switchTab("settings");
+        }
+      });
+      return;
+    }
+  }
+
   document.querySelectorAll("section[id^='tab-']").forEach(sec => sec.classList.add("hidden"));
   document.querySelectorAll(".nav-tab").forEach(btn => btn.classList.remove("active"));
 
@@ -1291,10 +1398,14 @@ async function createMonitorHandler() {
   const screenFilter = document.getElementById("selected-screen-filter")?.value || "ALL";
   rulePayload.screen_filter = screenFilter;
 
-  const userChatId = document.getElementById("monitor-telegram-chat-id")?.value.trim() || document.getElementById("tg-chat-input")?.value.trim();
-  if (userChatId) {
-    rulePayload.telegram_chat_id = userChatId;
+  const user = getStoredTelegramUser();
+  const userChatId = user?.chat_id || document.getElementById("monitor-telegram-chat-id")?.value.trim() || document.getElementById("tg-chat-input")?.value.trim();
+  if (!userChatId) {
+    showAlert("Please connect your Telegram bot first so you can receive seat alerts.", "error");
+    switchTab("settings");
+    return;
   }
+  rulePayload.telegram_chat_id = userChatId;
 
   const screenTagStr = (screenFilter && screenFilter !== 'ALL') ? ` • [${screenFilter}]` : '';
   const formatTag = formatName ? ` (${formatName}${screenTagStr}${showtimeStr ? ' • ' + showtimeStr : ''})` : '';
@@ -1358,18 +1469,29 @@ async function createMonitorHandler() {
 async function loadMonitors() {
   const container = document.getElementById("monitors-list");
   const emptyState = document.getElementById("monitors-empty");
+  const unlinkedState = document.getElementById("monitors-unlinked");
+
+  const user = getStoredTelegramUser();
+  if (!user || !user.chat_id) {
+    container.innerHTML = "";
+    if (emptyState) emptyState.classList.add("hidden");
+    if (unlinkedState) unlinkedState.classList.remove("hidden");
+    return;
+  }
+
+  if (unlinkedState) unlinkedState.classList.add("hidden");
 
   try {
-    const res = await fetch("/api/monitors");
+    const res = await fetch(`/api/monitors?telegram_chat_id=${encodeURIComponent(user.chat_id)}`);
     const monitors = await res.json();
 
-    if (monitors.length === 0) {
+    if (!Array.isArray(monitors) || monitors.length === 0) {
       container.innerHTML = "";
-      emptyState.classList.remove("hidden");
+      if (emptyState) emptyState.classList.remove("hidden");
       return;
     }
 
-    emptyState.classList.add("hidden");
+    if (emptyState) emptyState.classList.add("hidden");
     container.innerHTML = "";
 
     monitors.forEach(m => {
@@ -1627,14 +1749,23 @@ async function loadSettings() {
       tokenInput.value = data.telegram_bot_token || "";
     }
     const chatInput = document.getElementById("tg-chat-input");
-    if (chatInput) {
-      chatInput.value = data.telegram_chat_id || "";
-    }
 
     const connectedView = document.getElementById("tg-connected-view");
     const unconnectedView = document.getElementById("tg-unconnected-view");
 
-    if (data.telegram_chat_id) {
+    // Check localStorage first
+    let user = getStoredTelegramUser();
+    if (!user && data.telegram_chat_id) {
+      // Backfill from server settings if present (e.g. single user or initial dev)
+      user = {
+        chat_id: data.telegram_chat_id,
+        first_name: data.telegram_user_name || "You",
+        username: ""
+      };
+      setStoredTelegramUser(user);
+    }
+
+    if (user && user.chat_id) {
       // Connected State
       if (pairPollInterval) {
         clearInterval(pairPollInterval);
@@ -1645,20 +1776,24 @@ async function loadSettings() {
 
       const nameElem = document.getElementById("tg-display-name");
       const chatElem = document.getElementById("tg-display-chat-id");
-      if (nameElem) nameElem.textContent = data.telegram_user_name || "You";
-      if (chatElem) chatElem.textContent = data.telegram_chat_id;
+      if (nameElem) nameElem.textContent = user.first_name || "You";
+      if (chatElem) chatElem.textContent = user.chat_id;
 
-      // Auto-fill monitor creation chat ID if currently empty
+      if (chatInput) chatInput.value = user.chat_id;
+
+      // Auto-fill monitor creation chat ID
       const monInput = document.getElementById("monitor-telegram-chat-id");
-      if (monInput && !monInput.value) {
-        monInput.value = data.telegram_chat_id;
+      if (monInput) {
+        monInput.value = user.chat_id;
       }
     } else {
       // Unconnected / Pairing State
       if (connectedView) connectedView.classList.add("hidden");
       if (unconnectedView) unconnectedView.classList.remove("hidden");
+      if (chatInput) chatInput.value = "";
       start1ClickPairing();
     }
+    updateTelegramNavBadge();
   } catch (err) {
     console.error("Failed to load settings:", err);
   }
@@ -1692,8 +1827,14 @@ async function start1ClickPairing() {
           if (statusData.status === "PAIRED" && statusData.chat_id) {
             clearInterval(pairPollInterval);
             pairPollInterval = null;
+            setStoredTelegramUser({
+              chat_id: statusData.chat_id,
+              first_name: statusData.first_name || "Friend",
+              username: statusData.username || ""
+            });
             showAlert(`🎉 Connected! Welcome, ${statusData.first_name || "Friend"}! Telegram is linked.`, "success");
             loadSettings();
+            loadMonitors();
           }
         } catch (e) {
           // ignore transient poll error
@@ -1708,14 +1849,16 @@ async function start1ClickPairing() {
 function disconnectTelegram() {
   showCinematicConfirm({
     title: "Disconnect Telegram Account?",
-    message: "Are you sure you want to disconnect your Telegram account from SeatWatch? You will no longer receive instant alerts until paired again.",
+    message: "Are you sure you want to disconnect your Telegram account from this device? You will no longer receive alerts or see your watchers on this device until you pair again.",
     confirmText: "Disconnect Account",
     confirmIcon: "fa-solid fa-link-slash",
     onConfirm: async () => {
       try {
+        clearStoredTelegramUser();
         await fetch("/api/telegram/disconnect", { method: "POST" });
-        showAlert("Telegram account unlinked. 1-Click pairing is ready.", "info");
+        showAlert("Telegram account unlinked from this device.", "info");
         loadSettings();
+        loadMonitors();
       } catch (err) {
         showAlert("Failed to disconnect: " + err.message, "error");
       }
@@ -1743,11 +1886,14 @@ async function saveSettings() {
     });
     const result = await res.json();
     if (result.success) {
+      setStoredTelegramUser({
+        chat_id: chatId,
+        first_name: "You",
+        username: ""
+      });
       showAlert("Telegram Chat ID saved successfully! You are ready to receive alerts.", "success");
-      const monInput = document.getElementById("monitor-telegram-chat-id");
-      if (monInput && !monInput.value) {
-        monInput.value = chatId;
-      }
+      loadSettings();
+      loadMonitors();
     }
   } catch (err) {
     showAlert("Failed to save settings: " + err.message, "error");
