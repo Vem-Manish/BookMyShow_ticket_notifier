@@ -10,45 +10,15 @@
 </head>
 <body>
 
-  <!-- 35mm Retro Filmstrip Top Border -->
-  <div class="filmstrip-border-top">
-    <div class="filmstrip-sprockets"></div>
-  </div>
-
-  <!-- Theater Velvet Curtains (Left & Right) -->
-  <div class="velvet-curtain-left"></div>
-  <div class="velvet-curtain-right"></div>
-
-  <!-- Projector Lens & Light Beam -->
-  <div class="projector-lens"></div>
-  <div class="projector-beam"></div>
-
-  <!-- Cinema Marquee Sound & Projection Status Bar -->
-  <div class="cinema-marquee-soundbar">
-    <div class="soundbar-item">
-      <span class="dot"></span>
-      <i class="fa-solid fa-volume-high"></i>
-      <span>DOLBY ATMOS® 7.1 SURROUND</span>
-    </div>
-    <div class="soundbar-item">
-      <i class="fa-solid fa-video"></i>
-      <span>4K LASER RGB DUAL PROJECTION</span>
-    </div>
-    <div class="soundbar-item">
-      <i class="fa-solid fa-satellite-dish"></i>
-      <span>BOOKMYSHOW RADAR ENGINE: ONLINE</span>
-    </div>
-    <div class="soundbar-item">
-      <i class="fa-solid fa-shield-halved"></i>
-      <span>THX CINEMA CERTIFIED</span>
-    </div>
-  </div>
+  <!-- Floating Cinema Toast Container (Root-level for infallible z-index stacking above all layers) -->
+  <div id="cinema-toast-container"></div>
 
   <!-- ═══════════════════════════════════════════════════════ -->
-  <!-- GRAND CINEMA HEADER                                     -->
+  <!-- GRAND CINEMA TOPBAR (EDGE-TO-EDGE FIXED HEADER)             -->
   <!-- ═══════════════════════════════════════════════════════ -->
-  <header class="cinema-header">
-    <div class="header-inner">
+  <header class="cinema-topbar">
+    <div class="topbar-filmstrip-accent"></div>
+    <div class="topbar-inner">
       <div class="brand">
         <div class="brand-icon">
           <i class="fa-solid fa-clapperboard"></i>
@@ -80,17 +50,59 @@
           <span>Telegram Bot</span>
         </button>
       </nav>
+
+      <!-- Right: Live Engine Status & Controls -->
+      <div class="topbar-actions">
+        <div class="topbar-status-chip" title="BookMyShow Surveillance Engine Online">
+          <span class="topbar-pulse-dot"></span>
+          <span>BMS RADAR: ONLINE</span>
+        </div>
+
+        <button type="button" onclick="refreshDashboard(this)" class="btn-topbar-action" title="Refresh Live Radar">
+          <i class="fa-solid fa-rotate"></i>
+        </button>
+
+        <button type="button" id="sound-toggle-btn" onclick="toggleCinemaAudio()" class="btn-topbar-action active" title="Toggle Cinema Sound FX">
+          <i id="sound-toggle-icon" class="fa-solid fa-volume-high"></i>
+        </button>
+      </div>
     </div>
   </header>
+
+  <!-- Cinema Marquee Sound & Projection Status Bar (Anchored beneath topbar) -->
+  <div class="cinema-marquee-soundbar">
+    <div class="soundbar-item">
+      <span class="dot"></span>
+      <i class="fa-solid fa-volume-high"></i>
+      <span>DOLBY ATMOS® 7.1 SURROUND</span>
+    </div>
+    <div class="soundbar-item">
+      <i class="fa-solid fa-video"></i>
+      <span>4K LASER RGB DUAL PROJECTION</span>
+    </div>
+    <div class="soundbar-item">
+      <i class="fa-solid fa-satellite-dish"></i>
+      <span>BOOKMYSHOW RADAR ENGINE: ONLINE</span>
+    </div>
+    <div class="soundbar-item">
+      <i class="fa-solid fa-shield-halved"></i>
+      <span>THX CINEMA CERTIFIED</span>
+    </div>
+  </div>
+
+  <!-- Theater Velvet Curtains (Left & Right - Draped beneath topbar) -->
+  <div class="velvet-curtain-left"></div>
+  <div class="velvet-curtain-right"></div>
+
+  <!-- Projector Lens & Light Beam -->
+  <div class="projector-lens"></div>
+  <div class="projector-beam"></div>
 
   <!-- ═══════════════════════════════════════════════════════ -->
   <!-- MAIN CINEMA STAGE                                       -->
   <!-- ═══════════════════════════════════════════════════════ -->
   <main>
     <div class="container">
-
-      <!-- Floating Cinema Toast Container -->
-      <div id="cinema-toast-container"></div>
 
       <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
       <!-- TAB 1: ACTIVE RADAR DASHBOARD (TICKET STUBS)       -->
@@ -597,78 +609,123 @@
   </div>
 
   <!-- ═══════════════════════════════════════════════════════ -->
-  <!-- CINEMA RADAR SCOPE ACTIVATION MODAL                     -->
+  <!-- AUTHENTIC HOLLYWOOD FILM CLAPPERBOARD ACTIVATION MODAL      -->
   <!-- ═══════════════════════════════════════════════════════ -->
-  <div id="cinema-activation-modal" class="hidden cinema-modal-backdrop">
-    <div id="activation-modal-box" class="radar-modal">
+  <div id="cinema-activation-modal" class="hidden clapper-modal-backdrop">
+    <div class="clapper-stage">
+      
+      <!-- Overhead Stage Spotlight Beam -->
+      <div class="clapper-spotlight"></div>
 
-      <!-- Circular Radar Screen with Sweeping Beam -->
-      <div class="radar-scope">
-        <div class="radar-rings"></div>
-        <div class="radar-crosshair-h"></div>
-        <div class="radar-crosshair-v"></div>
-        <div class="radar-sweep-beam"></div>
-        <div class="radar-blip">
-          <i class="fa-solid fa-crosshairs"></i>
-        </div>
-      </div>
-
-      <!-- Status Header -->
-      <div class="space-y-2 mb-4">
-        <span style="display:inline-flex;align-items:center;gap:6px;padding:4px 14px;border-radius:20px;background:rgba(0,240,152,0.12);border:1px solid rgba(0,240,152,0.4);color:var(--neon-emerald);font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;font-family:'Montserrat',sans-serif">
-          <span style="width:6px;height:6px;border-radius:50%;background:var(--neon-emerald);box-shadow:0 0 8px var(--neon-emerald)"></span> Target Lock Acquired
-        </span>
-        <h3 class="font-cinema" style="font-size:24px;color:var(--gold-bright);letter-spacing:0.1em;text-shadow:0 0 25px rgba(212,175,55,0.5)">Watcher Activated</h3>
-        <p style="font-size:12px;color:var(--text-silver)">Continuous 24/7 BookMyShow surveillance is now operational.</p>
-      </div>
-
-      <!-- Golden Physical Ticket Pass -->
-      <div style="background:rgba(0,0,0,0.6);border:1px solid var(--gold-metallic);border-left:4px solid var(--velvet-bright);border-radius:var(--radius-md);padding:18px;text-align:left;position:relative;margin-bottom:20px;box-shadow:inset 0 0 20px rgba(0,0,0,0.8)">
-        <!-- Stamped Seal -->
-        <div class="ticket-stamp-badge" style="position:absolute;top:14px;right:14px">MONITORED</div>
-
-        <div style="margin-bottom:12px">
-          <span style="font-size:9px;font-family:'Courier Prime',monospace;color:var(--gold-metallic);font-weight:700;letter-spacing:1.5px;text-transform:uppercase">Feature Film</span>
-          <h4 id="act-modal-movie" style="font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:#fff;padding-right:90px;line-height:1.3;margin-top:2px">Movie Title</h4>
-          <p id="act-modal-venue" style="font-size:11px;color:var(--text-silver);margin-top:3px">
-            <i class="fa-solid fa-location-dot" style="color:var(--velvet-bright);margin-right:4px"></i>Venue Name
-          </p>
-        </div>
-
-        <div style="height:1px;background:repeating-linear-gradient(90deg, rgba(212,175,55,0.3) 0, rgba(212,175,55,0.3) 6px, transparent 6px, transparent 12px);margin:12px 0"></div>
-
-        <div class="grid-2 mb-3">
-          <div>
-            <span style="font-size:9px;font-family:'Courier Prime',monospace;color:var(--text-ash);display:block;text-transform:uppercase">Target Date</span>
-            <span id="act-modal-date" style="font-size:12px;font-family:'Courier Prime',monospace;color:#fff;font-weight:700">08/11/2026</span>
+      <!-- Physical 3D Film Clapperboard Slate -->
+      <div class="film-clapperboard" id="film-clapperboard">
+        
+        <!-- The Hinged Clapper Head -->
+        <div class="clapper-head">
+          <!-- Top Moving Arm that Snaps Down -->
+          <div class="clapper-arm" id="clapper-arm">
+            <div class="clapper-stick top-stick">
+              <div class="clapper-chevrons"></div>
+            </div>
+            <!-- Pivot Hinge Pin -->
+            <div class="clapper-pivot-pin"></div>
           </div>
-          <div>
-            <span style="font-size:9px;font-family:'Courier Prime',monospace;color:var(--text-ash);display:block;text-transform:uppercase">Format / Screen</span>
-            <span id="act-modal-format" style="font-size:12px;font-family:'Courier Prime',monospace;color:var(--gold-bright);font-weight:700">Dolby Cinema 3D</span>
+          
+          <!-- Bottom Stationary Strike Bar -->
+          <div class="clapper-base-bar">
+            <div class="clapper-stick bottom-stick">
+              <div class="clapper-chevrons reversed"></div>
+            </div>
+            <div class="clapper-pivot-pin base-pin"></div>
+            <div class="clapper-bracket-screw right-pin"></div>
           </div>
         </div>
 
-        <div style="background:rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.08);border-radius:6px;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px">
-          <div class="flex items-center gap-2">
-            <i class="fa-solid fa-bullseye" style="color:var(--velvet-bright)"></i>
-            <span id="act-modal-rule" style="font-size:11px;color:#fff;font-family:'Courier Prime',monospace">Rows B–I, Seats 12–25</span>
+        <!-- The Main Chalkboard Slate Body -->
+        <div class="clapper-slate-body">
+          
+          <!-- Header Bar: Production & Director -->
+          <div class="slate-header-grid">
+            <div class="slate-meta-cell full-width">
+              <span class="slate-label">PRODUCTION</span>
+              <span class="slate-val gold-chalk">SEATWATCH CINEMA RADAR</span>
+            </div>
+            <div class="slate-meta-cell">
+              <span class="slate-label">DIRECTOR</span>
+              <span class="slate-val chalk">BMS AUTOMATION</span>
+            </div>
+            <div class="slate-meta-cell">
+              <span class="slate-label">CAMERA</span>
+              <span class="slate-val chalk">CONTINUOUS SCAN</span>
+            </div>
           </div>
-          <code style="font-size:10px;color:var(--gold-bright)">Every 2 mins</code>
-        </div>
 
-        <div class="flex items-center justify-between mt-3" style="font-size:11px">
-          <span class="flex items-center gap-2" style="color:var(--neon-cyan)">
-            <i class="fa-brands fa-telegram"></i> Telegram Dispatch: Active
-          </span>
-          <span style="color:var(--text-ash);font-family:'Courier Prime',monospace">Ticket ID: #<span id="act-modal-id">...</span></span>
-        </div>
+          <div class="slate-hairline"></div>
+
+          <!-- Main Grid: Scene, Take, Cycle -->
+          <div class="slate-main-grid">
+            <!-- Scene / Feature Film Box -->
+            <div class="slate-cell scene-cell">
+              <span class="slate-label">SCENE (FEATURE FILM)</span>
+              <h3 id="act-modal-movie" class="slate-movie-title chalk-font">Ramayana</h3>
+              <p id="act-modal-venue" class="slate-venue-line chalk-font">
+                <i class="fa-solid fa-location-dot"></i> ALLU Cinemas: Kokapet
+              </p>
+            </div>
+
+            <!-- Take Number Box -->
+            <div class="slate-cell take-cell">
+              <span class="slate-label">TAKE</span>
+              <div class="slate-take-badge">
+                <span id="act-modal-id" class="chalk-font">#01</span>
+              </div>
+            </div>
+
+            <!-- Cycle Box -->
+            <div class="slate-cell cycle-cell">
+              <span class="slate-label">CADENCE</span>
+              <div class="slate-cadence-val chalk-font">2 MIN</div>
+            </div>
+          </div>
+
+          <div class="slate-hairline"></div>
+
+          <!-- Specs Grid: Date, Format, Radar Rule -->
+          <div class="slate-specs-grid">
+            <div class="slate-cell">
+              <span class="slate-label">SHOW DATE</span>
+              <span id="act-modal-date" class="slate-val chalk-font">08/11/2026</span>
+            </div>
+            <div class="slate-cell">
+              <span class="slate-label">FORMAT / SCREEN</span>
+              <span id="act-modal-format" class="slate-val chalk-font gold">Dolby 3D</span>
+            </div>
+            <div class="slate-cell wide">
+              <span class="slate-label">SEAT RADAR RULE</span>
+              <span id="act-modal-rule" class="slate-val chalk-font emerald">3 Zones Monitored</span>
+            </div>
+          </div>
+
+          <!-- Slam-Down Red Velvet Stamp -->
+          <div class="clapper-action-stamp" id="clapper-action-stamp">
+            <div class="stamp-box">
+              <span class="stamp-word">ACTION!</span>
+              <span class="stamp-subword">WATCHER ENGAGED</span>
+            </div>
+          </div>
+
+        </div> <!-- /clapper-slate-body -->
+      </div> <!-- /film-clapperboard -->
+
+      <!-- Action Button / Fast Forward -->
+      <div class="clapper-footer-bar">
+        <button type="button" onclick="closeActivationModalAndGo()" class="btn-clapper-proceed">
+          <i class="fa-solid fa-clapperboard"></i>
+          <span>PROCEED TO RADAR STAGE</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </button>
       </div>
 
-      <!-- Action Button -->
-      <button type="button" onclick="closeActivationModalAndGo()" class="btn btn-gold btn-lg w-full">
-        <span>View Live in Radar Board</span>
-        <i class="fa-solid fa-arrow-right"></i>
-      </button>
     </div>
   </div>
 

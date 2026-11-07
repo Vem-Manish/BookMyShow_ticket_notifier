@@ -56,16 +56,80 @@ function switchTab(tabName) {
 }
 
 // ----------------------------------------------------
-// Cinematic Audio Synthesizer (Web Audio API)
+// Cinematic Audio Synthesizer (Web Audio API) & Controls
 // ----------------------------------------------------
+let cinemaAudioEnabled = localStorage.getItem("cinemaAudioEnabled") !== "false";
+
+function toggleCinemaAudio() {
+  cinemaAudioEnabled = !cinemaAudioEnabled;
+  localStorage.setItem("cinemaAudioEnabled", cinemaAudioEnabled);
+  const icon = document.getElementById("sound-toggle-icon");
+  const btn = document.getElementById("sound-toggle-btn");
+  if (icon) {
+    icon.className = cinemaAudioEnabled ? "fa-solid fa-volume-high" : "fa-solid fa-volume-xmark";
+  }
+  if (btn) {
+    btn.classList.toggle("active", cinemaAudioEnabled);
+  }
+  showAlert(cinemaAudioEnabled ? "🔊 Cinema Sound FX: Enabled" : "🔇 Cinema Sound FX: Muted", "info");
+}
+
+function refreshDashboard(btn) {
+  if (btn) {
+    const icon = btn.querySelector("i");
+    if (icon) {
+      icon.classList.add("fa-spin");
+      setTimeout(() => icon.classList.remove("fa-spin"), 700);
+    }
+  }
+  loadMonitors();
+  showAlert("Live radar surveillance refreshed.", "info");
+}
+
 function playCinemaSound(type = 'success') {
+  if (!cinemaAudioEnabled && type !== 'clap') return;
   try {
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     if (!AudioContext) return;
     const ctx = new AudioContext();
     const now = ctx.currentTime;
 
-    if (type === 'activate') {
+    if (type === 'clap') {
+      // Authentic wooden film clapperboard slap
+      // 1. Sharp wooden slap transient (bandpass filtered white noise burst)
+      const bufferSize = ctx.sampleRate * 0.08;
+      const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        output[i] = (Math.random() * 2 - 1) * Math.exp(-i / (ctx.sampleRate * 0.012));
+      }
+      const whiteNoise = ctx.createBufferSource();
+      whiteNoise.buffer = noiseBuffer;
+      const filter = ctx.createBiquadFilter();
+      filter.type = "bandpass";
+      filter.frequency.setValueAtTime(1400, now);
+      filter.Q.setValueAtTime(2.5, now);
+      const noiseGain = ctx.createGain();
+      noiseGain.gain.setValueAtTime(0.55, now);
+      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+      whiteNoise.connect(filter);
+      filter.connect(noiseGain);
+      noiseGain.connect(ctx.destination);
+      whiteNoise.start(now);
+
+      // 2. Resonant wooden body thump
+      const osc = ctx.createOscillator();
+      const oscGain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(180, now);
+      osc.frequency.exponentialRampToValueAtTime(45, now + 0.09);
+      oscGain.gain.setValueAtTime(0.65, now);
+      oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+      osc.connect(oscGain);
+      oscGain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.12);
+    } else if (type === 'activate') {
       // 3-tone rising fanfare
       const freqs = [440, 554.37, 659.25, 880];
       freqs.forEach((freq, idx) => {
@@ -205,33 +269,76 @@ function showCinematicConfirm({ title, message, confirmText = "Confirm", confirm
 }
 
 // ----------------------------------------------------
-// Cinematic Monitor Activation Animation & Modal
+// Authentic Hollywood Film Clapperboard Activation
 // ----------------------------------------------------
 let lastCreatedMonitorId = null;
+let clapperTimeout = null;
 
 function showActivationModal(data) {
   const modal = document.getElementById("cinema-activation-modal");
   if (!modal) return;
 
-  document.getElementById("act-modal-movie").textContent = data.movie_title || "Movie";
-  document.getElementById("act-modal-venue").innerHTML = `<i class="fa-solid fa-location-dot text-rose-400 mr-1"></i> ${data.venue_name || "Cinema"}`;
-  
+  const movieEl = document.getElementById("act-modal-movie");
+  const venueEl = document.getElementById("act-modal-venue");
+  const dateEl = document.getElementById("act-modal-date");
+  const formatEl = document.getElementById("act-modal-format");
+  const ruleEl = document.getElementById("act-modal-rule");
+  const idEl = document.getElementById("act-modal-id");
+
+  if (movieEl) movieEl.textContent = data.movie_title || "Feature Film";
+  if (venueEl) venueEl.innerHTML = `<i class="fa-solid fa-location-dot" style="color:var(--velvet-bright);margin-right:4px"></i> ${data.venue_name || "Cinema"}`;
+
   const d = data.target_date || "";
   const displayDate = d.length === 8 ? `${d.substring(6,8)}/${d.substring(4,6)}/${d.substring(0,4)}` : d;
-  document.getElementById("act-modal-date").textContent = displayDate;
-  document.getElementById("act-modal-format").textContent = data.format_name || "Any Format";
-  document.getElementById("act-modal-rule").textContent = data.rule_summary || "Preferred seats";
-  document.getElementById("act-modal-id").textContent = data.id || "NEW";
+  if (dateEl) dateEl.textContent = displayDate;
+  if (formatEl) formatEl.textContent = data.format_name || "Any Format";
+  if (ruleEl) ruleEl.textContent = data.rule_summary || "Preferred Seats";
+  if (idEl) idEl.textContent = `#00${data.id || "1"}`;
 
   lastCreatedMonitorId = data.id;
 
+  const clapperArm = document.getElementById("clapper-arm");
+  const clapperBoard = document.getElementById("film-clapperboard");
+  const stamp = document.getElementById("clapper-action-stamp");
+
+  if (clapperArm) clapperArm.classList.remove("clapping");
+  if (clapperBoard) clapperBoard.classList.remove("impact");
+  if (stamp) stamp.classList.remove("stamped");
+  modal.classList.remove("fade-out");
+
   modal.classList.remove("hidden");
-  spawnConfetti();
+
+  // Step 1: Open arm initially, then snap down hard with a loud wooden CLAP!
+  setTimeout(() => {
+    if (clapperArm) clapperArm.classList.add("clapping");
+
+    // Exact moment of impact (280ms into snap)
+    setTimeout(() => {
+      playCinemaSound('clap');
+      if (clapperBoard) clapperBoard.classList.add("impact");
+      if (stamp) stamp.classList.add("stamped");
+      spawnConfetti();
+    }, 280);
+  }, 220);
+
+  // Auto transition to Active Radar stage after 2.8s
+  if (clapperTimeout) clearTimeout(clapperTimeout);
+  clapperTimeout = setTimeout(() => {
+    closeActivationModalAndGo();
+  }, 2800);
 }
 
 function closeActivationModalAndGo() {
+  if (clapperTimeout) clearTimeout(clapperTimeout);
   const modal = document.getElementById("cinema-activation-modal");
-  if (modal) modal.classList.add("hidden");
+  if (modal) {
+    modal.classList.add("fade-out");
+    setTimeout(() => {
+      modal.classList.add("hidden");
+      modal.classList.remove("fade-out");
+    }, 300);
+  }
+
   switchTab("monitors");
   loadMonitors();
 
@@ -240,13 +347,13 @@ function closeActivationModalAndGo() {
       const card = document.getElementById(`monitor-card-${lastCreatedMonitorId}`);
       if (card) {
         card.scrollIntoView({ behavior: "smooth", block: "center" });
-        card.classList.add("ring-2", "ring-rose-500", "neon-glow-rose");
+        card.classList.add("card-newly-activated");
         setTimeout(() => {
-          card.classList.remove("ring-2", "ring-rose-500", "neon-glow-rose");
-        }, 4000);
+          card.classList.remove("card-newly-activated");
+        }, 3200);
       }
     }
-  }, 300);
+  }, 350);
 }
 
 function spawnConfetti() {
@@ -1243,7 +1350,7 @@ async function createMonitorHandler() {
     });
     const result = await res.json();
     if (result.success) {
-      playCinemaSound('activate');
+      
       let ruleDesc = "Preferred seats";
       if (currentRuleType === "MULTI_SELECTION") {
         ruleDesc = rulePayload.selections?.length ? `${rulePayload.selections.length} Selection Block(s)` : "Multi-Row Range";
