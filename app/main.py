@@ -134,7 +134,8 @@ def get_cinema_showtimes(
     city_slug: str,
     venue_code: str,
     date_code: str,
-    venue_slug: Optional[str] = None
+    venue_slug: Optional[str] = None,
+    venue_name: Optional[str] = None
 ):
     """Get all movies, screens, formats, and showtimes for a specific cinema on a date."""
     try:
@@ -142,7 +143,8 @@ def get_cinema_showtimes(
             city_slug=city_slug,
             venue_code=venue_code,
             date_code=date_code,
-            venue_slug=venue_slug
+            venue_slug=venue_slug,
+            venue_name=venue_name
         )
         return data
     except Exception as e:

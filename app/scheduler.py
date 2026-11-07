@@ -5,6 +5,7 @@ Executes periodic BookMyShow availability checks and triggers notifications.
 
 import asyncio
 import logging
+import re
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -23,11 +24,59 @@ from app.rules import RuleEvaluator
 logger = logging.getLogger(__name__)
 
 
+
+def format_matches(
+    f_name: str,
+    f_attr: str,
+    f_screen: str,
+    f_event: str,
+    format_filter: str,
+    event_code: str
+) -> bool:
+    if not format_filter or format_filter.lower() in ["any format", "all", ""]:
+        return True
+
+    # 1. Direct event code match
+    if event_code and f_event and event_code.strip().lower() == f_event.strip().lower():
+        return True
+
+    norm_filter = format_filter.lower().replace("•", " ").replace("-", " ")
+    norm_name = (f_name or "").lower().replace("•", " ").replace("-", " ")
+    norm_attr = (f_attr or "").lower().replace("•", " ").replace("-", " ")
+    norm_screen = (f_screen or "").lower().replace("•", " ").replace("-", " ")
+    haystack = f"{norm_name} {norm_attr} {norm_screen}"
+
+    # Language safety check: if filter explicitly has one language, don't match another language
+    languages = ["telugu", "hindi", "tamil", "kannada", "malayalam", "english"]
+    filter_lang = next((lang for lang in languages if lang in norm_filter), None)
+    haystack_lang = next((lang for lang in languages if lang in haystack), None)
+    if filter_lang and haystack_lang and filter_lang != haystack_lang:
+        return False
+
+    # 2. Substring matching in both directions
+    if norm_filter in haystack or (norm_name and norm_name in norm_filter) or (norm_attr and norm_attr in norm_filter):
+        return True
+
+    # 3. Premium experience tags matching
+    filter_tokens = [t.strip() for t in norm_filter.split() if len(t.strip()) > 1]
+    premium_tags = ["dolby", "imax", "4dx", "screenx", "ice", "laser"]
+    filter_tags = [t for t in premium_tags if t in filter_tokens]
+    if filter_tags and any(t in haystack for t in filter_tags):
+        return True
+
+    # 4. Core tokens match
+    core_tokens = [t for t in filter_tokens if t not in ["3d", "2d", "all", "shows", "show"]]
+    if core_tokens and all(t in haystack for t in core_tokens):
+        return True
+
+    return False
+
+
 class MonitoringScheduler:
-    def __init__(self):
+    def __init__(self, bms: Optional[BMSClient] = None):
         self.scheduler = AsyncIOScheduler()
         self.notifier = TelegramNotifier()
-        self.bms = BMSClient()
+        self.bms = bms or BMSClient()
         self.running_jobs: Dict[int, str] = {}
         self.last_alert_cache: Dict[int, Dict[str, Any]] = {}
 
@@ -116,6 +165,9 @@ class MonitoringScheduler:
             })
 
         # If not locked to a single session, discover live shows from cinema schedule
+        venue_name = monitor.get("venue_name") or ""
+        venue_slug = re.sub(r"[^a-zA-Z0-9]+", "-", venue_name.lower()).strip("-") if venue_name else None
+
         if not candidate_shows:
             # 1. Cinema-centric lookup (shows ALL child formats, screens, and showtimes)
             try:
@@ -123,33 +175,25 @@ class MonitoringScheduler:
                     city_slug=city_slug,
                     venue_code=venue_code,
                     date_code=target_date,
+                    venue_slug=venue_slug,
+                    venue_name=venue_name,
                     include_predictions=False
                 )
-                if c_data.get("is_open") and not c_data.get("is_predicted"):
+                if c_data.get("is_error"):
+                    err_msg = c_data.get("message") or "BMS connection pending"
+                    logger.warning(f"Cinema showtimes check rate-limited or challenged: {err_msg}")
+                elif c_data.get("is_open") and not c_data.get("is_predicted"):
                     movie_target = monitor["movie_title"].strip().lower()
                     for m in c_data.get("movies", []):
                         m_title = (m.get("title") or "").strip().lower()
                         if movie_target in m_title or m_title in movie_target:
                             for f in m.get("formats", []):
-                                f_name = (f.get("format_name") or "").lower()
-                                f_attr = (f.get("attributes") or "").lower()
-                                f_screen = (f.get("screen") or "").lower()
-                                f_event = (f.get("event_code") or "").lower()
-    
-                                matches = False
-                                if not format_filter or format_filter == "any format":
-                                    matches = True
-                                elif format_filter in f_name or format_filter in f_attr:
-                                    matches = True
-                                elif monitor.get("event_code") and monitor["event_code"].lower() == f_event:
-                                    matches = True
-                                else:
-                                    tokens = [t.strip() for t in format_filter.replace("•", " ").split() if len(t.strip()) > 1]
-                                    target_haystack = f"{f_name} {f_attr} {f_screen}"
-                                    if tokens and all(t in target_haystack for t in tokens):
-                                        matches = True
-    
-                                if matches:
+                                f_name = f.get("format_name") or ""
+                                f_attr = f.get("attributes") or ""
+                                f_screen = f.get("screen") or ""
+                                f_event = f.get("event_code") or ""
+
+                                if format_matches(f_name, f_attr, f_screen, f_event, format_filter, event_code):
                                     format_detected = f.get("format_name", format_detected)
                                     for sh in f.get("shows", []):
                                         sid = str(sh.get("session_id", "")).strip()
@@ -178,9 +222,9 @@ class MonitoringScheduler:
                     for v in st_data.get("venues", []):
                         if v.get("venue_code") == venue_code:
                             for show in v.get("showtimes", []):
-                                show_format = (show.get("format") or "").lower()
-                                show_attr = (show.get("screen_attr") or "").lower()
-                                if not format_filter or (format_filter in show_format or format_filter in show_attr):
+                                show_format = show.get("format") or ""
+                                show_attr = show.get("screen_attr") or ""
+                                if format_matches(show_format, show_attr, show_attr, "", format_filter, event_code):
                                     sid = str(show.get("session_id", "")).strip()
                                     if sid and not any(c["session_id"] == sid for c in candidate_shows):
                                         candidate_shows.append({

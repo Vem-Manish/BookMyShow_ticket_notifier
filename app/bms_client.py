@@ -28,6 +28,23 @@ DEFAULT_HEADERS = {
     "Referer": "https://in.bookmyshow.com/",
 }
 
+POPULAR_CINEMAS_MAP = {
+    "ALUC": "allu-cinemas-kokapet",
+    "ACAS": "aaa-cinemas-ameerpet",
+    "AMBH": "amb-cinemas-gachibowli",
+    "PCMH": "pvr-central-mall-panjagutta",
+    "INMH": "inox-gvk-one-mall-banjara-hills",
+    "CLPH": "cinepolis-ccpl-mall-malkajgiri",
+    "PVRH": "pvr-forum-sujana-mall-kukatpally",
+    "PRSD": "prasads-multiplex-hyderabad",
+    "INMC": "inox-gsm-mall-chandanagar",
+    "PVIR": "pvr-irrum-manzil-hyderabad",
+    "SMMR": "sandhya-70mm-4k-dolby-atmos-rtc-x-roads",
+    "SUDA": "sudarshan-35mm-4k-laser-dolby-atmos-rtc-x-roads",
+    "BRKH": "bhramaramba-70mm-a-c-4k-dolby-kukatpally",
+    "ARJU": "arjun-70mm-kukatpally",
+}
+
 
 POPULAR_METROS = [
     {"code": "HYD", "name": "Hyderabad", "slug": "hyderabad"},
@@ -91,11 +108,16 @@ POPULAR_METROS = [
 class BMSClient:
     def __init__(self, browser_profile: str = "chrome"):
         self.browser_profile = browser_profile
+        self.client = self._create_client()
+        self._cinema_slug_cache: Dict[str, str] = dict(POPULAR_CINEMAS_MAP)
+        self._cinema_format_cache: Dict[str, Dict[str, Any]] = {}
+
+    def _create_client(self) -> primp.Client:
         proxy = os.getenv("BMS_PROXY") or os.getenv("HTTPS_PROXY") or os.getenv("HTTP_PROXY")
         client = None
-        for prof in [browser_profile, "chrome", "chrome_126", "chrome_124", None]:
+        for prof in [self.browser_profile, "chrome", None]:
             try:
-                kwargs = {"timeout": 10}
+                kwargs = {"timeout": 12}
                 if prof:
                     kwargs["impersonate"] = prof
                 if proxy:
@@ -104,9 +126,7 @@ class BMSClient:
                 break
             except Exception:
                 continue
-        self.client = client if client is not None else primp.Client(timeout=10)
-        self._cinema_slug_cache: Dict[str, str] = {}
-        self._cinema_format_cache: Dict[str, Dict[str, Any]] = {}
+        return client if client is not None else primp.Client(timeout=12)
 
 
     def get_regions(self) -> Dict[str, Any]:
@@ -426,6 +446,7 @@ class BMSClient:
         venue_code: str,
         date_code: str,
         venue_slug: Optional[str] = None,
+        venue_name: Optional[str] = None,
         include_predictions: bool = True
     ) -> Dict[str, Any]:
         """
@@ -435,12 +456,16 @@ class BMSClient:
         """
         if not venue_slug:
             venue_slug = self._cinema_slug_cache.get(venue_code)
+            if not venue_slug and venue_name:
+                venue_slug = re.sub(r"[^a-zA-Z0-9]+", "-", venue_name.lower()).strip("-")
+                self._cinema_slug_cache[venue_code] = venue_slug
             if not venue_slug:
                 try:
                     all_cinemas = self.get_cinemas(city_slug)
                     for c in all_cinemas:
                         if c["code"] == venue_code:
                             venue_slug = c["slug"]
+                            self._cinema_slug_cache[venue_code] = venue_slug
                             break
                 except Exception:
                     pass
@@ -451,7 +476,19 @@ class BMSClient:
         headers = dict(DEFAULT_HEADERS)
         headers["Referer"] = f"https://in.bookmyshow.com/{city_slug}/cinemas"
 
-        res = self.client.get(url, headers=headers)
+        res = None
+        for attempt in range(2):
+            try:
+                res = self.client.get(url, headers=headers)
+                if res.status_code == 200:
+                    break
+                elif res.status_code in [403, 429, 503]:
+                    logger.warning(f"BMS responded with HTTP {res.status_code} for {venue_code} on {date_code} (attempt {attempt+1}). Recreating client session...")
+                    self.client = self._create_client()
+            except Exception as e:
+                logger.warning(f"BMS cinema request error on attempt {attempt+1}: {e}")
+                self.client = self._create_client()
+
         result_movies: List[Dict[str, Any]] = []
 
         if res.status_code == 200:
@@ -533,6 +570,19 @@ class BMSClient:
                 "date_code": date_code,
                 "movies": result_movies,
                 "message": "Cinema showtimes live"
+            }
+
+        # Check if BMS was blocked / rate-limited
+        if res and res.status_code in [403, 429, 503]:
+            return {
+                "is_open": False,
+                "is_predicted": False,
+                "is_error": True,
+                "status_code": res.status_code,
+                "venue_code": venue_code,
+                "date_code": date_code,
+                "movies": [],
+                "message": f"BookMyShow rate-limited (HTTP {res.status_code}). Will retry on next radar check."
             }
 
         # If bookings are not open on this date:
