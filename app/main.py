@@ -72,8 +72,8 @@ def serve_favicon():
     return Response(status_code=204)
 
 
-@app.get("/health")
-@app.get("/api/health")
+@app.api_route("/health", methods=["GET", "HEAD"])
+@app.api_route("/api/health", methods=["GET", "HEAD"])
 def health_check():
     """Liveness & health probe for cloud monitoring, Docker, and uptime services."""
     try:
@@ -90,7 +90,7 @@ def health_check():
         return {"status": "degraded", "error": str(e)}
 
 
-@app.get("/")
+@app.api_route("/", methods=["GET", "HEAD"])
 def serve_index():
     index_file = os.path.join(STATIC_DIR, "index.html")
     if os.path.exists(index_file):

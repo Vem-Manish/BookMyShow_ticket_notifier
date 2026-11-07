@@ -29,6 +29,65 @@ DEFAULT_HEADERS = {
 }
 
 
+POPULAR_METROS = [
+    {"code": "HYD", "name": "Hyderabad", "slug": "hyderabad"},
+    {"code": "MUMBAI", "name": "Mumbai", "slug": "mumbai"},
+    {"code": "NCR", "name": "Delhi-NCR", "slug": "national-capital-region-ncr"},
+    {"code": "BANG", "name": "Bengaluru", "slug": "bengaluru"},
+    {"code": "CHEN", "name": "Chennai", "slug": "chennai"},
+    {"code": "PUNE", "name": "Pune", "slug": "pune"},
+    {"code": "KOLK", "name": "Kolkata", "slug": "kolkata"},
+    {"code": "AHD", "name": "Ahmedabad", "slug": "ahmedabad"},
+    {"code": "CHD", "name": "Chandigarh", "slug": "chandigarh"},
+    {"code": "KOCH", "name": "Kochi", "slug": "kochi"},
+    {"code": "VIZAG", "name": "Visakhapatnam", "slug": "vizag"},
+    {"code": "VIJ", "name": "Vijayawada", "slug": "vijayawada"},
+    {"code": "COIM", "name": "Coimbatore", "slug": "coimbatore"},
+    {"code": "JAIP", "name": "Jaipur", "slug": "jaipur"},
+    {"code": "LUCK", "name": "Lucknow", "slug": "lucknow"},
+    {"code": "SURAT", "name": "Surat", "slug": "surat"},
+    {"code": "NAGP", "name": "Nagpur", "slug": "nagpur"},
+    {"code": "IND", "name": "Indore", "slug": "indore"},
+    {"code": "PAT", "name": "Patna", "slug": "patna"},
+    {"code": "BHOP", "name": "Bhopal", "slug": "bhopal"},
+    {"code": "VAD", "name": "Vadodara", "slug": "vadodara"},
+    {"code": "LUDH", "name": "Ludhiana", "slug": "ludhiana"},
+    {"code": "AGRA", "name": "Agra", "slug": "agra"},
+    {"code": "NASH", "name": "Nashik", "slug": "nashik"},
+    {"code": "RANC", "name": "Ranchi", "slug": "ranchi"},
+    {"code": "VAR", "name": "Varanasi", "slug": "varanasi"},
+    {"code": "AMR", "name": "Amritsar", "slug": "amritsar"},
+    {"code": "ALLD", "name": "Prayagraj (Allahabad)", "slug": "prayagraj-allahabad"},
+    {"code": "JAB", "name": "Jabalpur", "slug": "jabalpur"},
+    {"code": "GWAL", "name": "Gwalior", "slug": "gwalior"},
+    {"code": "AUR", "name": "Chhatrapati Sambhajinagar", "slug": "aurangabad"},
+    {"code": "SOL", "name": "Solapur", "slug": "solapur"},
+    {"code": "HUBL", "name": "Hubli-Dharwad", "slug": "hubli"},
+    {"code": "MYSO", "name": "Mysuru (Mysore)", "slug": "mysore"},
+    {"code": "TIRU", "name": "Tiruchirappalli", "slug": "trichy"},
+    {"code": "MADU", "name": "Madurai", "slug": "madurai"},
+    {"code": "SAL", "name": "Salem", "slug": "salem"},
+    {"code": "KOTA", "name": "Kota", "slug": "kota"},
+    {"code": "DEHR", "name": "Dehradun", "slug": "dehradun"},
+    {"code": "TRIV", "name": "Thiruvananthapuram", "slug": "trivandrum"},
+    {"code": "CAL", "name": "Kozhikode", "slug": "calicut"},
+    {"code": "RAIP", "name": "Raipur", "slug": "raipur"},
+    {"code": "GUW", "name": "Guwahati", "slug": "guwahati"},
+    {"code": "BHUB", "name": "Bhubaneswar", "slug": "bhubaneswar"},
+    {"code": "GOA", "name": "Goa", "slug": "goa"},
+    {"code": "WAR", "name": "Warangal", "slug": "warangal"},
+    {"code": "GUN", "name": "Guntur", "slug": "guntur"},
+    {"code": "NELL", "name": "Nellore", "slug": "nellore"},
+    {"code": "KURN", "name": "Kurnool", "slug": "kurnool"},
+    {"code": "RAJ", "name": "Rajahmundry", "slug": "rajahmundry"},
+    {"code": "KAK", "name": "Kakinada", "slug": "kakinada"},
+    {"code": "TIRUP", "name": "Tirupati", "slug": "tirupati"},
+    {"code": "KARI", "name": "Karimnagar", "slug": "karimnagar"},
+    {"code": "NIZ", "name": "Nizamabad", "slug": "nizamabad"},
+    {"code": "KHAM", "name": "Khammam", "slug": "khammam"},
+]
+
+
 class BMSClient:
     def __init__(self, browser_profile: str = "chrome"):
         self.browser_profile = browser_profile
@@ -49,42 +108,45 @@ class BMSClient:
         self._cinema_slug_cache: Dict[str, str] = {}
         self._cinema_format_cache: Dict[str, Dict[str, Any]] = {}
 
+
     def get_regions(self) -> Dict[str, Any]:
-        """Fetch list of supported cities/regions from BookMyShow."""
-        url = "https://in.bookmyshow.com/serv/getData?cmd=GETREGIONS"
-        res = self.client.get(url, headers=DEFAULT_HEADERS)
-        if res.status_code != 200:
-            raise RuntimeError(f"Failed to fetch regions: HTTP {res.status_code}")
+        """Fetch list of supported cities/regions from BookMyShow with resilient fallback."""
+        try:
+            url = "https://in.bookmyshow.com/serv/getData?cmd=GETREGIONS"
+            headers = dict(DEFAULT_HEADERS)
+            headers["Referer"] = "https://in.bookmyshow.com/explore/home/hyderabad"
+            res = self.client.get(url, headers=headers)
+            if res.status_code == 200:
+                m = re.search(r"var regionlst\s*=\s*(\{.*?\});", res.text)
+                if m:
+                    data = json.loads(m.group(1))
+                    top_codes = ["HYD", "MUMBAI", "NCR", "BANG", "CHEN", "PUNE", "KOLK", "AHD", "CHD", "KOCH"]
+                    popular_cities = []
+                    all_cities = []
+                    for code, entries in data.items():
+                        if entries and isinstance(entries, list):
+                            item = entries[0]
+                            city_obj = {
+                                "code": item.get("code", code),
+                                "name": item.get("name", code.title()),
+                                "slug": item.get("slug", code.lower()),
+                            }
+                            all_cities.append(city_obj)
+                            if code in top_codes:
+                                popular_cities.append(city_obj)
+                    if all_cities:
+                        popular_cities.sort(key=lambda x: top_codes.index(x["code"]) if x["code"] in top_codes else 999)
+                        all_cities.sort(key=lambda x: x["name"])
+                        return {"popular": popular_cities, "all": all_cities}
+        except Exception as e:
+            logger.warning(f"Error fetching live regions from BMS: {e}. Using resilient fallback catalog.")
 
-        m = re.search(r"var regionlst\s*=\s*(\{.*?\});", res.text)
-        if not m:
-            raise RuntimeError("Could not parse region list from BMS response")
-
-        data = json.loads(m.group(1))
-        
-        # Priority list of top Indian metro regions
-        top_codes = ["HYD", "MUMBAI", "NCR", "BANG", "CHEN", "PUNE", "KOLK", "AHD", "CHD", "KOCH"]
-        popular_cities = []
-        all_cities = []
-
-        for code, entries in data.items():
-            if entries and isinstance(entries, list):
-                item = entries[0]
-                city_obj = {
-                    "code": item.get("code", code),
-                    "name": item.get("name", code.title()),
-                    "slug": item.get("slug", code.lower()),
-                }
-                all_cities.append(city_obj)
-                if code in top_codes:
-                    popular_cities.append(city_obj)
-
-        popular_cities.sort(key=lambda x: top_codes.index(x["code"]) if x["code"] in top_codes else 999)
-        all_cities.sort(key=lambda x: x["name"])
-
+        # Resilient offline/cloud fallback catalog
+        top_10 = POPULAR_METROS[:10]
+        sorted_all = sorted(POPULAR_METROS, key=lambda x: x["name"])
         return {
-            "popular": popular_cities,
-            "all": all_cities
+            "popular": top_10,
+            "all": sorted_all
         }
 
     def get_movies(self, city_slug: str = "hyderabad") -> List[Dict[str, Any]]:
@@ -133,7 +195,12 @@ class BMSClient:
     def get_cinemas(self, city_slug: str = "hyderabad") -> List[Dict[str, Any]]:
         """Fetch all theatres / cinemas in a given city from BookMyShow."""
         url = f"https://in.bookmyshow.com/{city_slug}/cinemas"
-        res = self.client.get(url, headers=DEFAULT_HEADERS)
+        headers = dict(DEFAULT_HEADERS)
+        headers["Referer"] = f"https://in.bookmyshow.com/explore/home/{city_slug}"
+        res = self.client.get(url, headers=headers)
+        if res.status_code != 200:
+            # Fallback to explore URL
+            res = self.client.get(f"https://in.bookmyshow.com/explore/cinemas-{city_slug}", headers=headers)
         if res.status_code != 200:
             raise RuntimeError(f"Failed to fetch cinemas for {city_slug}: HTTP {res.status_code}")
 
