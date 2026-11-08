@@ -10,9 +10,13 @@ from typing import Any, Dict, List, Optional
 
 DB_PATH = os.getenv("SEATWATCH_DB_PATH", os.path.join(os.path.dirname(os.path.dirname(__file__)), "seatwatch.db"))
 
-import base64
-DEFAULT_BOT_TOKEN = base64.b64decode("OTExNzkzMDY3NDpBQUVsVUxTZXVVaGNYakpaaDVQQW9BMlgwcUw4YVo0UEpQOA==").decode("utf-8")
-DEFAULT_BOT_USERNAME = "seatwatch_alert_bot"
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+DEFAULT_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
+DEFAULT_BOT_USERNAME = os.getenv("TELEGRAM_BOT_USERNAME", "seatwatch_alert_bot")
 
 
 def get_connection() -> sqlite3.Connection:

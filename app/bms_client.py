@@ -491,6 +491,18 @@ class BMSClient:
 
         result_movies: List[Dict[str, Any]] = []
 
+        if not res:
+            return {
+                "is_open": False,
+                "is_predicted": False,
+                "is_error": True,
+                "status_code": 0,
+                "venue_code": venue_code,
+                "date_code": date_code,
+                "movies": [],
+                "message": "Network or DNS connection failed. Will retry on next radar check."
+            }
+
         if res.status_code == 200:
             idx = res.text.find("window.__INITIAL_STATE__ = ")
             if idx != -1:

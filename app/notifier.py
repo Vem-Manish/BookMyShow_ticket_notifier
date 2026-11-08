@@ -9,9 +9,14 @@ import httpx
 
 logger = logging.getLogger(__name__)
 
-import base64
-DEFAULT_BOT_TOKEN = base64.b64decode("OTExNzkzMDY3NDpBQUVsVUxTZXVVaGNYakpaaDVQQW9BMlgwcUw4YVo0UEpQOA==").decode("utf-8")
-DEFAULT_BOT_USERNAME = "seatwatch_alert_bot"
+import os
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+DEFAULT_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
+DEFAULT_BOT_USERNAME = os.getenv("TELEGRAM_BOT_USERNAME", "seatwatch_alert_bot")
 
 
 class TelegramNotifier:
