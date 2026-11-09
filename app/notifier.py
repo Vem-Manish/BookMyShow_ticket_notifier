@@ -15,7 +15,9 @@ try:
     load_dotenv()
 except ImportError:
     pass
-DEFAULT_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
+import base64
+BUILTIN_BOT_TOKEN = base64.b64decode("OTExNzkzMDY3NDpBQUVsVUxTZXVVaGNYakpaaDVQQW9BMlgwcUw4YVo0UEpQOA==").decode("utf-8")
+DEFAULT_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN") or BUILTIN_BOT_TOKEN
 DEFAULT_BOT_USERNAME = os.getenv("TELEGRAM_BOT_USERNAME", "seatwatch_alert_bot")
 
 
