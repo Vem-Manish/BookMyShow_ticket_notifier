@@ -1753,17 +1753,8 @@ async function loadSettings() {
     const connectedView = document.getElementById("tg-connected-view");
     const unconnectedView = document.getElementById("tg-unconnected-view");
 
-    // Check localStorage first
+    // Strictly read from current browser's localStorage
     let user = getStoredTelegramUser();
-    if (!user && data.telegram_chat_id) {
-      // Backfill from server settings if present (e.g. single user or initial dev)
-      user = {
-        chat_id: data.telegram_chat_id,
-        first_name: data.telegram_user_name || "You",
-        username: ""
-      };
-      setStoredTelegramUser(user);
-    }
 
     if (user && user.chat_id) {
       // Connected State
@@ -1876,25 +1867,23 @@ async function saveSettings() {
   }
 
   try {
-    const res = await fetch("/api/settings", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        telegram_bot_token: token,
-        telegram_chat_id: chatId
-      })
-    });
-    const result = await res.json();
-    if (result.success) {
-      setStoredTelegramUser({
-        chat_id: chatId,
-        first_name: "You",
-        username: ""
+    if (token) {
+      await fetch("/api/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          telegram_bot_token: token
+        })
       });
-      showAlert("Telegram Chat ID saved successfully! You are ready to receive alerts.", "success");
-      loadSettings();
-      loadMonitors();
     }
+    setStoredTelegramUser({
+      chat_id: chatId,
+      first_name: "You",
+      username: ""
+    });
+    showAlert("Telegram Chat ID saved successfully! You are ready to receive alerts.", "success");
+    loadSettings();
+    loadMonitors();
   } catch (err) {
     showAlert("Failed to save settings: " + err.message, "error");
   }

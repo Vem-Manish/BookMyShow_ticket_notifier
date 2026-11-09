@@ -56,16 +56,6 @@ class TelegramPairingService:
                 "first_name": session.get("first_name"),
                 "username": session.get("username"),
             }
-
-        # Fallback: if any recent session paired in this window
-        for s in self.pairing_sessions.values():
-            if s.get("status") == "PAIRED" and s.get("chat_id"):
-                return {
-                    "status": "PAIRED",
-                    "chat_id": s.get("chat_id"),
-                    "first_name": s.get("first_name"),
-                    "username": s.get("username"),
-                }
         return {"status": "EXPIRED_OR_NOT_FOUND"}
 
     def _cleanup_expired(self):
@@ -160,19 +150,19 @@ class TelegramPairingService:
                                     sess["username"] = username
                                     matched = True
 
-                                # 2. Match ANY active pending session(s) if code was omitted, expired, or regenerated
-                                for s in self.pairing_sessions.values():
-                                    if s.get("status") == "PENDING":
+                                elif not pairing_code:
+                                    # If user clicked /start without code parameter,
+                                    # match ONLY if there is exactly 1 pending session to avoid cross-user collisions
+                                    pending = [s for s in self.pairing_sessions.values() if s.get("status") == "PENDING"]
+                                    if len(pending) == 1:
+                                        s = pending[0]
                                         s["status"] = "PAIRED"
                                         s["chat_id"] = chat_id
                                         s["first_name"] = first_name
                                         s["username"] = username
                                         matched = True
 
-                                # Persist in database
-                                update_setting("telegram_chat_id", chat_id)
-                                update_setting("telegram_user_name", first_name)
-                                logger.info(f"Telegram user {first_name} ({chat_id}) paired!")
+                                logger.info(f"Telegram user {first_name} ({chat_id}) paired! Matched session: {matched}")
 
                                 # Send welcoming reply
                                 welcome_msg = (

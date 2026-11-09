@@ -321,18 +321,27 @@ class SettingsUpdateRequest(BaseModel):
 
 @app.get("/api/settings")
 def read_settings():
-    return get_settings()
+    s = get_settings()
+    return {
+        "telegram_bot_token": s.get("telegram_bot_token", ""),
+        "default_interval_minutes": s.get("default_interval_minutes", "2"),
+    }
 
 
 @app.post("/api/settings")
 def write_settings(req: SettingsUpdateRequest):
     if req.telegram_bot_token is not None:
         update_setting("telegram_bot_token", req.telegram_bot_token.strip())
-    if req.telegram_chat_id is not None:
-        update_setting("telegram_chat_id", req.telegram_chat_id.strip())
     if req.default_interval_minutes is not None:
         update_setting("default_interval_minutes", req.default_interval_minutes.strip())
-    return {"success": True, "settings": get_settings()}
+    s = get_settings()
+    return {
+        "success": True,
+        "settings": {
+            "telegram_bot_token": s.get("telegram_bot_token", ""),
+            "default_interval_minutes": s.get("default_interval_minutes", "2"),
+        }
+    }
 
 
 class TelegramTestRequest(BaseModel):

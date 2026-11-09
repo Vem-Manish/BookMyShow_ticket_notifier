@@ -96,6 +96,7 @@ def init_db():
     # Ensure any previously triggered monitors continue monitoring
     cursor.execute("UPDATE monitors SET status = 'ACTIVE' WHERE status = 'TRIGGERED';")
     cursor.execute("UPDATE settings SET value = ? WHERE key = 'telegram_bot_token' AND (value IS NULL OR value = '');", (DEFAULT_BOT_TOKEN,))
+    cursor.execute("UPDATE settings SET value = '' WHERE key IN ('telegram_chat_id', 'telegram_user_name');")
 
     # Ensure telegram_chat_id column exists
     try:
@@ -272,8 +273,6 @@ def get_settings() -> Dict[str, str]:
     # Allow cloud environment variables to provide default/fallback values
     if not settings.get("telegram_bot_token") and os.getenv("TELEGRAM_BOT_TOKEN"):
         settings["telegram_bot_token"] = os.getenv("TELEGRAM_BOT_TOKEN", DEFAULT_BOT_TOKEN)
-    if not settings.get("telegram_chat_id") and os.getenv("TELEGRAM_CHAT_ID"):
-        settings["telegram_chat_id"] = os.getenv("TELEGRAM_CHAT_ID")
 
     return settings
 
