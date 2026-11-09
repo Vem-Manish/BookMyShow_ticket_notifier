@@ -86,7 +86,7 @@ function updateTelegramNavBadge() {
       reelCard.style.background = "rgba(0, 240, 152, 0.05)";
     }
     if (reelTitle) {
-      reelTitle.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--neon-emerald);margin-right:6px"></i> Telegram Dispatch: Active (${user.chat_id})`;
+      reelTitle.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--neon-emerald);margin-right:6px"></i> Telegram: Connected (${user.chat_id})`;
     }
     if (reelDesc) {
       reelDesc.innerHTML = `Instant seat alerts will be pushed to <strong>${user.first_name || 'your Telegram'}</strong> (<a href="javascript:switchTab('settings')" style="color:var(--neon-cyan);text-decoration:underline">change</a>)`;
@@ -116,7 +116,7 @@ function openCreateWatcher() {
   if (!user || !user.chat_id) {
     showCinematicConfirm({
       title: "Telegram Connection Required",
-      message: "SeatWatch dispatches real-time ticket alerts straight to your private Telegram the moment seats open. Please connect your Telegram account first to start tracking.",
+      message: "SeatWatch sends real-time ticket alerts straight to your Telegram the moment seats open. Please connect your Telegram account first to start tracking.",
       confirmText: "Connect Telegram (1-Click)",
       confirmIcon: "fa-brands fa-telegram",
       onConfirm: () => {
@@ -137,7 +137,7 @@ function switchTab(tabName) {
     if (!user || !user.chat_id) {
       showCinematicConfirm({
         title: "Telegram Connection Required",
-        message: "SeatWatch dispatches real-time ticket alerts straight to your private Telegram the moment seats open. Please connect your Telegram account first to start tracking.",
+        message: "SeatWatch sends real-time ticket alerts straight to your Telegram the moment seats open. Please connect your Telegram account first to start tracking.",
         confirmText: "Connect Telegram (1-Click)",
         confirmIcon: "fa-brands fa-telegram",
         onConfirm: () => {
@@ -190,7 +190,7 @@ function refreshDashboard(btn) {
     }
   }
   loadMonitors();
-  showAlert("Live radar surveillance refreshed.", "info");
+  showAlert("Alerts refreshed.", "info");
 }
 
 function playCinemaSound(type = 'success') {
@@ -672,7 +672,7 @@ async function onCinemaOrDateChanged() {
           <i class="fa-solid fa-wand-magic-sparkles text-amber-400 mt-0.5"></i>
           <div>
             <strong class="text-amber-300">Bookings have not opened yet for this cinema on this date.</strong>
-            <p class="text-slate-300 mt-0.5">Showing <strong>predicted formats & screens</strong> synthesized from this cinema's active schedule. You can select your target experience (e.g. <em>Telugu • DOLBY CINEMA 3D</em>) and set seat conditions now!</p>
+            <p class="text-slate-300 mt-0.5">Showing <strong>predicted formats & screens</strong> based on this theatre's regular schedule. You can select your preferred format and set seat alerts now!</p>
           </div>
         </div>
       `;
@@ -1510,12 +1510,12 @@ function createMonitorCard(m) {
 
   let statusClass = "active";
   let statusIcon = "fa-solid fa-satellite-dish";
-  let statusText = "LIVE RADAR";
+  let statusText = "ACTIVE";
 
   if (m.status === "ACTIVE") {
     statusClass = "active";
     statusIcon = "fa-solid fa-satellite-dish";
-    statusText = "LIVE RADAR";
+    statusText = "ACTIVE";
   } else if (m.status === "TRIGGERED") {
     statusClass = "triggered";
     statusIcon = "fa-solid fa-bell";
@@ -1557,7 +1557,7 @@ function createMonitorCard(m) {
       <div class="ticket-header">
         <div>
           <div class="ticket-admit-badge">
-            <i class="fa-solid fa-film"></i> ADMIT ONE • CINEMA PASS
+            <i class="fa-solid fa-film"></i> TICKET ALERT
           </div>
           <h3 class="ticket-movie-title">${m.movie_title}</h3>
           <p class="ticket-venue">
@@ -1572,7 +1572,7 @@ function createMonitorCard(m) {
       <!-- Specs Box -->
       <div class="ticket-specs-box">
         <div class="spec-cell">
-          <span class="spec-label">TARGET SHOW DATE</span>
+          <span class="spec-label">SHOW DATE</span>
           <span class="spec-val mono">${displayDate}</span>
         </div>
         <div class="spec-cell">
@@ -1580,12 +1580,12 @@ function createMonitorCard(m) {
           <span class="spec-val gold mono">${m.format_filter || "Any Format"}${screenBadge}</span>
         </div>
         <div class="spec-cell full-width">
-          <span class="spec-label">SEAT RADAR RULE</span>
+          <span class="spec-label">SEATS MONITORED</span>
           <span class="spec-val crimson">${ruleSummary}</span>
         </div>
         ${m.rule_payload?.telegram_chat_id ? `
         <div class="spec-cell full-width">
-          <span class="spec-label">TELEGRAM DISPATCH</span>
+          <span class="spec-label">TELEGRAM ALERT</span>
           <span class="spec-val mono" style="color:var(--neon-cyan);display:flex;align-items:center;gap:6px">
             <i class="fa-brands fa-telegram"></i> ID: ${m.rule_payload.telegram_chat_id}
           </span>
@@ -1595,9 +1595,9 @@ function createMonitorCard(m) {
       <!-- Radar Status Report Banner -->
       <div class="ticket-radar-banner">
         <div class="radar-banner-header">
-          <i class="fa-solid fa-satellite-dish"></i> RADAR SURVEILLANCE REPORT
+          <i class="fa-solid fa-satellite-dish"></i> LATEST STATUS
         </div>
-        <div class="radar-banner-text">${m.last_status_message || "Continuous surveillance active — waiting for first radar ping."}</div>
+        <div class="radar-banner-text">${m.last_status_message || "Alert active — checking BookMyShow now..."}</div>
       </div>
     </div>
 
@@ -1654,7 +1654,7 @@ async function triggerCheckNow(id) {
   }
   const pingVal = card?.querySelector(".spec-cell.full-width:last-child .spec-val");
   if (pingVal) {
-    pingVal.innerHTML = `<i class="fa-solid fa-satellite-dish fa-spin" style="color:var(--gold-bright);margin-right:4px"></i>Scanning BookMyShow radar now...`;
+    pingVal.innerHTML = `<i class="fa-solid fa-satellite-dish fa-spin" style="color:var(--gold-bright);margin-right:4px"></i>Checking BookMyShow now...`;
   }
   showAlert(`Checking BookMyShow now for Monitor #${id}...`, "info");
   try {
@@ -1684,13 +1684,13 @@ async function resumeMonitor(id) {
 
 function deleteMonitor(id) {
   showCinematicConfirm({
-    title: "Decommission Seat Watcher?",
-    message: `Are you sure you want to delete Monitor #${id}? Continuous BookMyShow radar surveillance for this show will be stopped immediately.`,
+    title: "Delete This Alert?",
+    message: `Are you sure you want to delete this alert? We will stop checking BookMyShow for this show.`,
     confirmText: "Delete Watcher",
     confirmIcon: "fa-solid fa-trash-can",
     onConfirm: async () => {
       await fetch(`/api/monitors/${id}`, { method: "DELETE" });
-      showAlert(`Monitor #${id} removed from surveillance radar.`, "info");
+      showAlert(`Alert deleted successfully.`, "info");
       loadMonitors();
     }
   });
@@ -1710,7 +1710,7 @@ async function viewLogs(id) {
     const logs = await res.json();
 
     if (logs.length === 0) {
-      content.innerHTML = "<div style='color:var(--text-ash);padding:14px 0'>No surveillance log entries recorded yet.</div>";
+      content.innerHTML = "<div style='color:var(--text-ash);padding:14px 0'>No check logs recorded yet.</div>";
       return;
     }
 
@@ -1926,3 +1926,12 @@ async function testTelegramAlert() {
     showAlert("Network error testing Telegram: " + err.message, "error");
   }
 }
+
+// Automatic background surveillance refresh: updates active monitors every 15s if viewing Monitors tab
+setInterval(() => {
+  const monitorsTab = document.getElementById("tab-monitors");
+  if (monitorsTab && monitorsTab.classList.contains("active")) {
+    loadMonitors();
+  }
+}, 15000);
+

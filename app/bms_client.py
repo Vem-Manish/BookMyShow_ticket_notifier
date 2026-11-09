@@ -594,7 +594,7 @@ class BMSClient:
                 "venue_code": venue_code,
                 "date_code": date_code,
                 "movies": [],
-                "message": f"BookMyShow rate-limited (HTTP {res.status_code}). Will retry on next radar check."
+                "message": f"BookMyShow rate-limited (HTTP {res.status_code}). Will retry on next check."
             }
 
         # If bookings are not open on this date:

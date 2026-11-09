@@ -49,9 +49,9 @@ class TestSeatWatchSystem(unittest.TestCase):
 
     def test_03_seat_layout_decryption(self):
         # Test with live session at AAA Cinemas Ameerpet (session 39838)
-        layout = self.bms.get_seat_layout("ACAS", "39838")
+        layout = self.bms.get_seat_layout("ALUC", "6830")
         if not layout or layout.get("total_seats", 0) == 0:
-            layout = self.bms.get_seat_layout("ALUC", "6330")
+            layout = self.bms.get_seat_layout("ACAS", "39838")
         self.assertIn("total_seats", layout)
         self.assertIn("available_seats", layout)
         self.assertIn("layout_rows", layout)
@@ -183,13 +183,13 @@ class TestSeatWatchSystem(unittest.TestCase):
 
     def test_07_cinema_showtimes_and_child_formats(self):
         # Verify that querying cinema showtimes returns ChildEvents (Dolby 3D, 2D, 3D, etc.)
-        data = self.bms.get_cinema_showtimes("hyderabad", "ALUC", "20261108", venue_slug="allu-cinemas-kokapet")
+        data = self.bms.get_cinema_showtimes("hyderabad", "ALUC", "20261110", venue_slug="allu-cinemas-kokapet")
         self.assertTrue(data.get("is_open"))
         movies = data.get("movies", [])
         self.assertGreater(len(movies), 0)
 
         ramayana = next((m for m in movies if "ramayana" in m["title"].lower()), None)
-        self.assertIsNotNone(ramayana, "Ramayana should be present in ALUC on 20261108")
+        self.assertIsNotNone(ramayana, "Ramayana should be present in ALUC on 20261110")
         formats = [f["format_name"] for f in ramayana["formats"]]
         # Must contain multiple formats (Dolby Cinema 3D, 3D, 2D)
         self.assertGreater(len(formats), 1)
@@ -221,7 +221,7 @@ class TestSeatWatchSystem(unittest.TestCase):
 
     def test_10_pvr_layout_and_screen_tags(self):
         # Verify PVR Lakeshore ILKS has PXL screen tags and seat layout parses correctly
-        data = self.bms.get_cinema_showtimes("hyderabad", "ILKS", "20261108")
+        data = self.bms.get_cinema_showtimes("hyderabad", "ILKS", "20261110")
         self.assertTrue(data.get("is_open"))
         ramayana = next((m for m in data.get("movies", []) if "ramayana" in m["title"].lower()), None)
         self.assertIsNotNone(ramayana, "Ramayana should be at ILKS")
@@ -235,7 +235,7 @@ class TestSeatWatchSystem(unittest.TestCase):
         self.assertGreaterEqual(len(pxl_shows), 2, "Should have at least 2 PXL shows")
 
         # Test PVR seat layout parsing for session 13529
-        layout = self.bms.get_seat_layout("ILKS", "13529")
+        layout = self.bms.get_seat_layout("ILKS", "13669")
         self.assertGreater(layout.get("total_seats", 0), 200, "PVR ILKS should parse > 200 seats")
         self.assertGreater(len(layout.get("layout_rows", [])), 10, "PVR ILKS should have > 10 rows")
         print(f"[OK] PVR Layout & Screen Tags verified: {len(pxl_shows)} PXL shows found, layout parsed {layout['total_seats']} seats.")
@@ -251,7 +251,7 @@ class TestSeatWatchSystem(unittest.TestCase):
             "event_code": "ET00414436",
             "venue_name": "PVR: Lakeshore, Hyderabad",
             "venue_code": "ILKS",
-            "target_date": "20261108",
+            "target_date": "20261110",
             "format_filter": "Telugu • 3D",
             "session_id": "ALL",
             "rule_type": "ZONES",

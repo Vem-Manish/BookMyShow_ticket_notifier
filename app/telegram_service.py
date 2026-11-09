@@ -49,14 +49,24 @@ class TelegramPairingService:
         """Check status of a pairing code."""
         self._cleanup_expired()
         session = self.pairing_sessions.get(code)
-        if not session:
-            return {"status": "EXPIRED_OR_NOT_FOUND"}
-        return {
-            "status": session["status"],
-            "chat_id": session.get("chat_id"),
-            "first_name": session.get("first_name"),
-            "username": session.get("username"),
-        }
+        if session:
+            return {
+                "status": session["status"],
+                "chat_id": session.get("chat_id"),
+                "first_name": session.get("first_name"),
+                "username": session.get("username"),
+            }
+
+        # Fallback: if any recent session paired in this window
+        for s in self.pairing_sessions.values():
+            if s.get("status") == "PAIRED" and s.get("chat_id"):
+                return {
+                    "status": "PAIRED",
+                    "chat_id": s.get("chat_id"),
+                    "first_name": s.get("first_name"),
+                    "username": s.get("username"),
+                }
+        return {"status": "EXPIRED_OR_NOT_FOUND"}
 
     def _cleanup_expired(self):
         cutoff = datetime.now() - timedelta(minutes=15)
@@ -83,26 +93,28 @@ class TelegramPairingService:
         url = f"https://api.telegram.org/bot{token}/sendMessage"
         try:
             async with httpx.AsyncClient(timeout=10) as client:
-                await client.post(url, json={
+                resp = await client.post(url, json={
                     "chat_id": chat_id,
                     "text": text,
                     "parse_mode": "Markdown"
                 })
+                if resp.status_code != 200:
+                    # Fallback without markdown to guarantee delivery
+                    clean_text = text.replace("*", "").replace("`", "").replace("_", "")
+                    await client.post(url, json={
+                        "chat_id": chat_id,
+                        "text": clean_text
+                    })
         except Exception as e:
             logger.error(f"Failed to send Telegram reply: {e}")
 
     async def _polling_loop(self):
         offset = 0
-        logger.info("Telegram on-demand pairing listener initialized.")
+        logger.info("Telegram pairing listener initialized.")
 
         while self.running:
             try:
                 self._cleanup_expired()
-                # On-demand polling: Only poll Telegram when a user is actively trying to pair
-                has_pending = any(s.get("status") == "PENDING" for s in self.pairing_sessions.values())
-                if not has_pending:
-                    await asyncio.sleep(2)
-                    continue
 
                 settings = get_settings()
                 token = settings.get("telegram_bot_token") or DEFAULT_BOT_TOKEN
@@ -111,9 +123,9 @@ class TelegramPairingService:
                     continue
 
                 url = f"https://api.telegram.org/bot{token}/getUpdates"
-                params = {"offset": offset, "timeout": 8, "limit": 10}
+                params = {"offset": offset, "timeout": 10, "limit": 10}
 
-                async with httpx.AsyncClient(timeout=20) as client:
+                async with httpx.AsyncClient(timeout=25) as client:
                     resp = await client.get(url, params=params)
                     if resp.status_code == 200:
                         data = resp.json()
@@ -139,6 +151,7 @@ class TelegramPairingService:
                                 pairing_code = parts[1].strip() if len(parts) > 1 else None
 
                                 matched = False
+                                # 1. Direct code match
                                 if pairing_code and pairing_code in self.pairing_sessions:
                                     sess = self.pairing_sessions[pairing_code]
                                     sess["status"] = "PAIRED"
@@ -147,49 +160,36 @@ class TelegramPairingService:
                                     sess["username"] = username
                                     matched = True
 
-                                # Also check if there is an active pending session created within last 3 minutes
-                                if not matched and not pairing_code:
-                                    recent_sessions = [
-                                        s for s in self.pairing_sessions.values()
-                                        if s["status"] == "PENDING" and (datetime.now() - s["created_at"]).total_seconds() < 180
-                                    ]
-                                    if recent_sessions:
-                                        target_sess = recent_sessions[-1]
-                                        target_sess["status"] = "PAIRED"
-                                        target_sess["chat_id"] = chat_id
-                                        target_sess["first_name"] = first_name
-                                        target_sess["username"] = username
+                                # 2. Match ANY active pending session(s) if code was omitted, expired, or regenerated
+                                for s in self.pairing_sessions.values():
+                                    if s.get("status") == "PENDING":
+                                        s["status"] = "PAIRED"
+                                        s["chat_id"] = chat_id
+                                        s["first_name"] = first_name
+                                        s["username"] = username
                                         matched = True
 
-                                if matched or pairing_code:
-                                    # Persist in database
-                                    update_setting("telegram_chat_id", chat_id)
-                                    update_setting("telegram_user_name", first_name)
-                                    logger.info(f"Telegram user {first_name} ({chat_id}) successfully paired!")
+                                # Persist in database
+                                update_setting("telegram_chat_id", chat_id)
+                                update_setting("telegram_user_name", first_name)
+                                logger.info(f"Telegram user {first_name} ({chat_id}) paired!")
 
-                                    # Send welcoming reply
-                                    welcome_msg = (
-                                        f"🎉 *Successfully Connected to SeatWatch!*\n\n"
-                                        f"Hey {first_name}! Your Telegram account is now linked to your SeatWatch dashboard.\n\n"
-                                        f"You will receive instant alerts here the exact second your preferred movie seats open up! 🍿\n\n"
-                                        f"🚨 *Important Tip — Don't Miss Out:*\n"
-                                        f"1️⃣ Tap the bot name at the top: *@seatwatch_alert_bot*\n"
-                                        f"2️⃣ Open *Notifications* ➔ *Customize*\n"
-                                        f"3️⃣ Set a **Custom Sound / Loud Ringtone** and set priority to **Urgent / High** so your phone alerts you loudly even when on silent!"
-                                    )
-                                    await self._send_telegram_reply(token, chat_id, welcome_msg)
-                                else:
-                                    # Fallback start response
-                                    info_msg = (
-                                        f"👋 *Hello {first_name}!*\n\n"
-                                        f"Welcome to *SeatWatch Bot*. Your Telegram Chat ID is: `{chat_id}`\n\n"
-                                        f"To connect to your dashboard in 1 click, click **Connect via Telegram** on your SeatWatch dashboard!"
-                                    )
-                                    await self._send_telegram_reply(token, chat_id, info_msg)
+                                # Send welcoming reply
+                                welcome_msg = (
+                                    f"🎉 *Successfully Connected to SeatWatch!*\n\n"
+                                    f"Hey {first_name}! Your Telegram account is now connected.\n\n"
+                                    f"Your Chat ID: `{chat_id}`\n\n"
+                                    f"You will receive instant alerts here the exact second your preferred movie seats open up! 🍿\n\n"
+                                    f"🚨 *Important Tip — Don't Miss Out:*\n"
+                                    f"1️⃣ Tap the bot name at the top: *@seatwatch_alert_bot*\n"
+                                    f"2️⃣ Open *Notifications* ➔ *Customize*\n"
+                                    f"3️⃣ Set a **Custom Sound / Loud Ringtone** and set priority to **Urgent / High** so your phone alerts you loudly even when on silent!"
+                                )
+                                await self._send_telegram_reply(token, chat_id, welcome_msg)
 
                     elif resp.status_code == 409:
-                        # Another process is polling getUpdates. Back off cleanly without console spam.
-                        await asyncio.sleep(10)
+                        # Another process is polling getUpdates. Back off cleanly.
+                        await asyncio.sleep(5)
                     else:
                         await asyncio.sleep(2)
 
